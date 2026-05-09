@@ -2,31 +2,37 @@
   background: #050505;
 }
 
-/* image zoom feeling */
-.spotlight-swiper .swiper-slide-active .spotlight-slide-zoom {
-  animation: spotlightZoom 5s ease-in-out forwards;
+/* ONLY IMAGE ZOOMS */
+.spotlight-swiper .swiper-slide-active .banner-bg-image {
+  animation: bannerImageBreath 7s ease-in-out infinite;
+  transform-origin: center center;
 }
 
-@keyframes spotlightZoom {
+@keyframes bannerImageBreath {
   0% {
     transform: scale(1);
   }
-  100% {
+
+  50% {
     transform: scale(1.045);
+  }
+
+  100% {
+    transform: scale(1);
   }
 }
 
-/* clean navigation buttons */
+/* CLEAN BUTTONS */
 .spotlight-prev,
 .spotlight-next {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(12, 12, 14, 0.58);
-  backdrop-filter: blur(12px);
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(10, 10, 12, 0.45);
+  backdrop-filter: blur(16px);
   color: white;
-  font-size: 34px;
+  font-size: 38px;
   line-height: 1;
   display: flex;
   align-items: center;
@@ -36,11 +42,11 @@
 
 .spotlight-prev:hover,
 .spotlight-next:hover {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.12);
   transform: translateY(-2px);
 }
 
-/* better pagination */
+/* PAGINATION */
 .spotlight-swiper .swiper-pagination {
   bottom: 34px !important;
 }
@@ -48,24 +54,13 @@
 .spotlight-swiper .swiper-pagination-bullet {
   width: 7px;
   height: 7px;
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.4);
   opacity: 1;
-  transition: all 0.25s ease;
+  transition: all 0.3s ease;
 }
 
 .spotlight-swiper .swiper-pagination-bullet-active {
   width: 28px;
   border-radius: 999px;
-  background: #ffffff;
-}
-
-/* remove cheap bottom emptiness feel */
-.spotlight-swiper::after {
-  content: "";
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 180px;
-  background: linear-gradient(to bottom, transparent, #050505 92%);
-  pointer-events: none;
-  z-index: 10;
+  background: white;
 }
