@@ -1,9 +1,10 @@
 import { useLocation, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 
+import Loader from "./components/Loader";
 import { HomeInfoProvider } from "./context/HomeInfoContext";
 
 import Home from "./pages/Home/Home";
@@ -27,10 +28,23 @@ import "./App.css";
 
 function App() {
   const location = useLocation();
+  const [appLoading, setAppLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAppLoading(false);
+    }, 2500);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [location]);
+
+  if (appLoading) {
+    return <Loader />;
+  }
 
   const isSplashScreen = location.pathname === "/";
 
