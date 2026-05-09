@@ -12,56 +12,101 @@ export default function Loader() {
         }
         return prev + 1;
       });
-    }, 20);
+    }, 22);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="fixed inset-0 z-[9999] bg-black flex items-center justify-center overflow-hidden">
+    <div className="fixed inset-0 z-[9999] bg-[#030305] flex items-center justify-center overflow-hidden">
+      <style>
+        {`
+          @keyframes driftOne {
+            0% { transform: translate(-20px, -10px) scale(1); opacity: .45; }
+            50% { transform: translate(35px, 20px) scale(1.12); opacity: .75; }
+            100% { transform: translate(-20px, -10px) scale(1); opacity: .45; }
+          }
 
-      {/* Premium Grid */}
-      <div className="absolute inset-0 opacity-[0.04]">
+          @keyframes driftTwo {
+            0% { transform: translate(25px, 15px) scale(1.1); opacity: .28; }
+            50% { transform: translate(-30px, -25px) scale(.95); opacity: .55; }
+            100% { transform: translate(25px, 15px) scale(1.1); opacity: .28; }
+          }
+
+          @keyframes logoReveal {
+            0% { opacity: 0; transform: translateY(12px) scale(.96); filter: blur(8px); }
+            100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+          }
+
+          @keyframes taglineReveal {
+            0% { opacity: 0; transform: translateY(8px); letter-spacing: 16px; }
+            100% { opacity: 1; transform: translateY(0); letter-spacing: 9px; }
+          }
+
+          @keyframes softPulse {
+            0%, 100% { opacity: .72; }
+            50% { opacity: 1; }
+          }
+        `}
+      </style>
+
+      {/* subtle grid */}
+      <div className="absolute inset-0 opacity-[0.035]">
         <div
           className="w-full h-full"
           style={{
             backgroundImage: `
-              linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px)
+              linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)
             `,
-            backgroundSize: "60px 60px",
+            backgroundSize: "64px 64px",
           }}
         />
       </div>
 
-      {/* Purple Glow */}
-      <div className="absolute w-[500px] h-[500px] bg-purple-700/20 blur-[140px] rounded-full" />
+      {/* moving purple atmosphere */}
+      <div
+        className="absolute w-[520px] h-[520px] rounded-full bg-purple-700/20 blur-[150px]"
+        style={{ animation: "driftOne 5.5s ease-in-out infinite" }}
+      />
+      <div
+        className="absolute w-[420px] h-[420px] rounded-full bg-fuchsia-500/10 blur-[130px]"
+        style={{ animation: "driftTwo 6.8s ease-in-out infinite" }}
+      />
 
-      {/* Content */}
-      <div className="relative flex flex-col items-center">
+      {/* center shine */}
+      <div className="absolute w-[360px] h-[1px] bg-gradient-to-r from-transparent via-purple-400/20 to-transparent" />
 
-        {/* OF */}
-        <h1
-          className="text-[120px] md:text-[150px] font-black text-white leading-none tracking-[-8px]"
-          style={{
-            textShadow: "0 0 35px rgba(168,85,247,0.18)",
-          }}
+      <div className="relative flex flex-col items-center -translate-y-4">
+        <div
+          className="flex items-center justify-center"
+          style={{ animation: "logoReveal 900ms ease-out both" }}
         >
-          OF
-        </h1>
+          <h1
+            className="text-[96px] md:text-[128px] font-black text-white leading-none tracking-[-6px]"
+            style={{
+              textShadow:
+                "0 0 18px rgba(168,85,247,0.35), 0 0 70px rgba(126,34,206,0.18)",
+            }}
+          >
+            OF
+          </h1>
+        </div>
 
-        {/* Tagline */}
-        <p className="mt-1 text-[10px] md:text-xs tracking-[8px] uppercase text-zinc-500">
+        <div
+          className="mt-5 text-[9px] md:text-[11px] uppercase text-zinc-500 font-medium whitespace-nowrap"
+          style={{ animation: "taglineReveal 1s ease-out 250ms both" }}
+        >
           THE UNFORGETTABLE EXPERIENCE
-        </p>
+        </div>
 
-        {/* Loader */}
-        <div className="w-[220px] h-[1px] bg-zinc-900 mt-8 overflow-hidden">
+        <div className="relative mt-9 w-[230px] h-[1px] bg-white/10 overflow-hidden">
           <div
-            className="h-full bg-purple-500 transition-all duration-200"
+            className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-500 via-fuchsia-400 to-purple-500 transition-all duration-200"
             style={{
               width: `${progress}%`,
-              boxShadow: "0 0 12px rgba(168,85,247,0.9)",
+              boxShadow: "0 0 16px rgba(168,85,247,0.85)",
+              animation: "softPulse 1.5s ease-in-out infinite",
             }}
           />
         </div>
