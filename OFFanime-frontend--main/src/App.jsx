@@ -29,11 +29,16 @@ import "./App.css";
 function App() {
   const location = useLocation();
   const [appLoading, setAppLoading] = useState(true);
+  const [showLoader, setShowLoader] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setAppLoading(false);
-    }, 2500);
+
+      setTimeout(() => {
+        setShowLoader(false);
+      }, 800);
+    }, 2800);
 
     return () => clearTimeout(timer);
   }, []);
@@ -41,10 +46,6 @@ function App() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [location]);
-
-  if (appLoading) {
-    return <Loader />;
-  }
 
   const isSplashScreen = location.pathname === "/";
 
@@ -122,6 +123,8 @@ function App() {
           <Analytics />
           <SpeedInsights />
           <DiscordPopup />
+
+          {showLoader && <Loader fadeOut={!appLoading} />}
         </div>
       </HomeInfoProvider>
     </HelmetProvider>
