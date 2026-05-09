@@ -11,7 +11,7 @@ import Banner from "../banner/Banner";
 
 const Spotlight = ({ spotlights = [] }) => {
   return (
-    <div className="relative h-[470px] max-[1390px]:h-[430px] max-[1300px]:h-[390px] max-md:h-[320px] pt-[20px]">
+    <div className="relative h-[560px] max-[1390px]:h-[520px] max-[1300px]:h-[485px] max-md:h-[390px] pt-[18px]">
       {spotlights.length > 0 ? (
         <Swiper
           spaceBetween={0}
@@ -31,14 +31,14 @@ const Spotlight = ({ spotlights = [] }) => {
             disableOnInteraction: false,
           }}
           modules={[Navigation, Autoplay, Pagination]}
-          className="spotlight-swiper h-full rounded-xl overflow-hidden relative"
+          className="spotlight-swiper h-full rounded-2xl overflow-hidden relative"
           style={{
             "--swiper-pagination-bullet-inactive-color":
-              "rgba(255, 255, 255, 0.5)",
+              "rgba(255, 255, 255, 0.55)",
             "--swiper-pagination-bullet-inactive-opacity": "1",
           }}
         >
-          <div className="absolute right-[22px] top-[22px] flex space-x-2 z-[20]">
+          <div className="absolute right-[22px] top-[26px] flex space-x-3 z-[20]">
             <div className="button-prev"></div>
             <div className="button-next"></div>
           </div>
