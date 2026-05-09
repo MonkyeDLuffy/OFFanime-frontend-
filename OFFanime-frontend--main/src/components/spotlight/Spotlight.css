@@ -1,99 +1,71 @@
 .spotlight-swiper {
-  width: 100%;
   background: #050505;
 }
 
-.spotlight-swiper .swiper-slide {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  overflow: hidden;
+/* image zoom feeling */
+.spotlight-swiper .swiper-slide-active .spotlight-slide-zoom {
+  animation: spotlightZoom 5s ease-in-out forwards;
 }
 
-.button-prev,
-.button-next {
-  width: 42px;
-  height: 42px;
-  background: rgba(20, 20, 20, 0.75);
+@keyframes spotlightZoom {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.045);
+  }
+}
+
+/* clean navigation buttons */
+.spotlight-prev,
+.spotlight-next {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(12, 12, 14, 0.58);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  cursor: pointer;
+  color: white;
+  font-size: 34px;
+  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: auto;
-  transition: all 0.2s ease;
-}
-
-.button-prev:hover,
-.button-next:hover {
-  background: rgba(255, 255, 255, 0.18);
-}
-
-.button-prev::after,
-.button-next::after {
-  content: "";
-  width: 10px;
-  height: 10px;
-  border: 2px solid #ffffff;
-  border-left: 0;
-  border-bottom: 0;
-}
-
-.button-prev::after {
-  transform: rotate(-135deg);
-  margin-left: 4px;
-}
-
-.button-next::after {
-  transform: rotate(45deg);
-  margin-right: 4px;
-}
-
-.swiper-horizontal > .swiper-pagination-bullets {
-  bottom: 24px !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: auto !important;
-  display: flex !important;
-  gap: 9px;
-  align-items: center;
-  justify-content: center;
-}
-
-.swiper-pagination-bullet {
-  width: 8px !important;
-  height: 8px !important;
-  border-radius: 999px !important;
-  background: rgba(255, 255, 255, 0.6) !important;
-  opacity: 1 !important;
   transition: all 0.25s ease;
 }
 
-.swiper-pagination-bullet-active {
-  width: 28px !important;
-  background: #ffffff !important;
+.spotlight-prev:hover,
+.spotlight-next:hover {
+  background: rgba(255, 255, 255, 0.16);
+  transform: translateY(-2px);
 }
 
-@media only screen and (max-width: 575px) {
-  .button-prev,
-  .button-next {
-    width: 34px;
-    height: 34px;
-  }
+/* better pagination */
+.spotlight-swiper .swiper-pagination {
+  bottom: 34px !important;
+}
 
-  .swiper-horizontal > .swiper-pagination-bullets {
-    bottom: 18px !important;
-    gap: 5px;
-  }
+.spotlight-swiper .swiper-pagination-bullet {
+  width: 7px;
+  height: 7px;
+  background: rgba(255, 255, 255, 0.45);
+  opacity: 1;
+  transition: all 0.25s ease;
+}
 
-  .swiper-pagination-bullet {
-    width: 6px !important;
-    height: 6px !important;
-  }
+.spotlight-swiper .swiper-pagination-bullet-active {
+  width: 28px;
+  border-radius: 999px;
+  background: #ffffff;
+}
 
-  .swiper-pagination-bullet-active {
-    width: 18px !important;
-  }
+/* remove cheap bottom emptiness feel */
+.spotlight-swiper::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 180px;
+  background: linear-gradient(to bottom, transparent, #050505 92%);
+  pointer-events: none;
+  z-index: 10;
 }
