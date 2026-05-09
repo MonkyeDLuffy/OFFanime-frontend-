@@ -1,24 +1,10 @@
-import { useEffect, useState } from "react";
-
-export default function Loader() {
-  const [progress, setProgress] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return prev + 1;
-      });
-    }, 22);
-
-    return () => clearInterval(interval);
-  }, []);
-
+export default function Loader({ fadeOut = false }) {
   return (
-    <div className="fixed inset-0 z-[9999] bg-[#030305] flex items-center justify-center overflow-hidden">
+    <div
+      className={`fixed inset-0 z-[9999] bg-[#030305] flex items-center justify-center overflow-hidden transition-opacity duration-700 ${
+        fadeOut ? "opacity-0 pointer-events-none" : "opacity-100"
+      }`}
+    >
       <style>
         {`
           @keyframes driftOne {
@@ -43,14 +29,15 @@ export default function Loader() {
             100% { opacity: 1; transform: translateY(0); letter-spacing: 9px; }
           }
 
-          @keyframes softPulse {
-            0%, 100% { opacity: .72; }
-            50% { opacity: 1; }
+          @keyframes glowingLine {
+            0% { transform: translateX(-120%); opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateX(220%); opacity: 0; }
           }
         `}
       </style>
 
-      {/* subtle grid */}
       <div className="absolute inset-0 opacity-[0.035]">
         <div
           className="w-full h-full"
@@ -64,7 +51,6 @@ export default function Loader() {
         />
       </div>
 
-      {/* moving purple atmosphere */}
       <div
         className="absolute w-[520px] h-[520px] rounded-full bg-purple-700/20 blur-[150px]"
         style={{ animation: "driftOne 5.5s ease-in-out infinite" }}
@@ -74,24 +60,17 @@ export default function Loader() {
         style={{ animation: "driftTwo 6.8s ease-in-out infinite" }}
       />
 
-      {/* center shine */}
-      <div className="absolute w-[360px] h-[1px] bg-gradient-to-r from-transparent via-purple-400/20 to-transparent" />
-
       <div className="relative flex flex-col items-center -translate-y-4">
-        <div
-          className="flex items-center justify-center"
-          style={{ animation: "logoReveal 900ms ease-out both" }}
+        <h1
+          className="text-[96px] md:text-[128px] font-black text-white leading-none tracking-[-6px]"
+          style={{
+            animation: "logoReveal 900ms ease-out both",
+            textShadow:
+              "0 0 18px rgba(168,85,247,0.35), 0 0 70px rgba(126,34,206,0.18)",
+          }}
         >
-          <h1
-            className="text-[96px] md:text-[128px] font-black text-white leading-none tracking-[-6px]"
-            style={{
-              textShadow:
-                "0 0 18px rgba(168,85,247,0.35), 0 0 70px rgba(126,34,206,0.18)",
-            }}
-          >
-            OF
-          </h1>
-        </div>
+          OF
+        </h1>
 
         <div
           className="mt-5 text-[9px] md:text-[11px] uppercase text-zinc-500 font-medium whitespace-nowrap"
@@ -102,11 +81,10 @@ export default function Loader() {
 
         <div className="relative mt-9 w-[230px] h-[1px] bg-white/10 overflow-hidden">
           <div
-            className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-500 via-fuchsia-400 to-purple-500 transition-all duration-200"
+            className="absolute top-0 h-full w-[70px] bg-gradient-to-r from-transparent via-fuchsia-400 to-transparent"
             style={{
-              width: `${progress}%`,
-              boxShadow: "0 0 16px rgba(168,85,247,0.85)",
-              animation: "softPulse 1.5s ease-in-out infinite",
+              animation: "glowingLine 1.45s ease-in-out infinite",
+              boxShadow: "0 0 18px rgba(217,70,239,0.95)",
             }}
           />
         </div>
