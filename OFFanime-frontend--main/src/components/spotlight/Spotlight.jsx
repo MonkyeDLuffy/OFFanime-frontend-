@@ -11,7 +11,7 @@ import Banner from "../banner/Banner";
 
 const Spotlight = ({ spotlights = [] }) => {
   return (
-    <div className="relative h-[560px] max-[1390px]:h-[520px] max-[1300px]:h-[485px] max-md:h-[390px] pt-[18px]">
+    <section className="relative w-full h-[720px] max-[1400px]:h-[650px] max-[1024px]:h-[560px] max-md:h-[470px] -mt-16 overflow-hidden">
       {spotlights.length > 0 ? (
         <Swiper
           spaceBetween={0}
@@ -31,28 +31,30 @@ const Spotlight = ({ spotlights = [] }) => {
             disableOnInteraction: false,
           }}
           modules={[Navigation, Autoplay, Pagination]}
-          className="spotlight-swiper h-full rounded-2xl overflow-hidden relative"
+          className="spotlight-swiper h-full w-full overflow-hidden relative"
           style={{
             "--swiper-pagination-bullet-inactive-color":
-              "rgba(255, 255, 255, 0.55)",
+              "rgba(255, 255, 255, 0.45)",
             "--swiper-pagination-bullet-inactive-opacity": "1",
           }}
         >
-          <div className="absolute right-[22px] top-[26px] flex space-x-3 z-[20]">
+          <div className="absolute right-[44px] top-[120px] flex space-x-3 z-[20] max-md:hidden">
             <div className="button-prev"></div>
             <div className="button-next"></div>
           </div>
 
           {spotlights.map((item, index) => (
-            <SwiperSlide className="relative" key={item.id || index}>
-              <Banner item={item} index={index} />
+            <SwiperSlide className="relative h-full" key={item.id || index}>
+              <Banner item={item} index={index} spotlightFull />
             </SwiperSlide>
           ))}
         </Swiper>
       ) : (
-        <p className="text-white">No spotlights to show.</p>
+        <div className="h-full flex items-center justify-center text-white">
+          No spotlights to show.
+        </div>
       )}
-    </div>
+    </section>
   );
 };
 
