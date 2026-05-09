@@ -11,7 +11,7 @@ import Banner from "../banner/Banner";
 
 const Spotlight = ({ spotlights = [] }) => {
   return (
-    <section className="relative w-screen h-[700px] max-[1400px]:h-[650px] max-[1024px]:h-[560px] max-md:h-[470px] -mt-16 left-1/2 -translate-x-1/2 overflow-hidden">
+    <section className="relative w-full h-[720px] max-[1400px]:h-[650px] max-[1024px]:h-[560px] max-md:h-[470px] -mt-16 overflow-hidden">
       {spotlights.length > 0 ? (
         <Swiper
           spaceBetween={0}
@@ -20,33 +20,32 @@ const Spotlight = ({ spotlights = [] }) => {
           allowTouchMove={true}
           grabCursor={true}
           navigation={{
-            nextEl: ".spotlight-next",
-            prevEl: ".spotlight-prev",
+            nextEl: ".button-next",
+            prevEl: ".button-prev",
           }}
           pagination={{
             clickable: true,
           }}
           autoplay={{
-            delay: 5000,
+            delay: 4500,
             disableOnInteraction: false,
           }}
           modules={[Navigation, Autoplay, Pagination]}
           className="spotlight-swiper h-full w-full overflow-hidden relative"
+          style={{
+            "--swiper-pagination-bullet-inactive-color":
+              "rgba(255, 255, 255, 0.45)",
+            "--swiper-pagination-bullet-inactive-opacity": "1",
+          }}
         >
-          <div className="absolute right-[38px] top-[145px] flex items-center gap-3 z-[30] max-md:hidden">
-            <button className="spotlight-prev" aria-label="Previous slide">
-              ‹
-            </button>
-            <button className="spotlight-next" aria-label="Next slide">
-              ›
-            </button>
+          <div className="absolute right-[44px] top-[120px] flex space-x-3 z-[20] max-md:hidden">
+            <div className="button-prev"></div>
+            <div className="button-next"></div>
           </div>
 
           {spotlights.map((item, index) => (
             <SwiperSlide className="relative h-full" key={item.id || index}>
-              <div className="spotlight-slide-zoom h-full">
-                <Banner item={item} index={index} spotlightFull />
-              </div>
+              <Banner item={item} index={index} spotlightFull />
             </SwiperSlide>
           ))}
         </Swiper>
