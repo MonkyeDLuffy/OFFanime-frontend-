@@ -11,7 +11,7 @@ import Banner from "../banner/Banner";
 
 const Spotlight = ({ spotlights = [] }) => {
   return (
-    <section className="relative w-full h-[720px] max-[1400px]:h-[650px] max-[1024px]:h-[560px] max-md:h-[470px] -mt-16 overflow-hidden">
+    <section className="relative w-screen h-[790px] max-[1400px]:h-[720px] max-[1024px]:h-[620px] max-md:h-[500px] -mt-16 left-1/2 -translate-x-1/2 overflow-hidden">
       {spotlights.length > 0 ? (
         <Swiper
           spaceBetween={0}
@@ -38,7 +38,7 @@ const Spotlight = ({ spotlights = [] }) => {
             "--swiper-pagination-bullet-inactive-opacity": "1",
           }}
         >
-          <div className="absolute right-[44px] top-[120px] flex space-x-3 z-[20] max-md:hidden">
+          <div className="absolute right-[52px] top-[120px] flex space-x-3 z-[20] max-md:hidden">
             <div className="button-prev"></div>
             <div className="button-next"></div>
           </div>
