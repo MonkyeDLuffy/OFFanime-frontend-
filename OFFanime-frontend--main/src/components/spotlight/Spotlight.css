@@ -1,0 +1,99 @@
+.spotlight-swiper {
+  width: 100%;
+  background: #050505;
+}
+
+.spotlight-swiper .swiper-slide {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.button-prev,
+.button-next {
+  width: 42px;
+  height: 42px;
+  background: rgba(20, 20, 20, 0.75);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  transition: all 0.2s ease;
+}
+
+.button-prev:hover,
+.button-next:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.button-prev::after,
+.button-next::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border: 2px solid #ffffff;
+  border-left: 0;
+  border-bottom: 0;
+}
+
+.button-prev::after {
+  transform: rotate(-135deg);
+  margin-left: 4px;
+}
+
+.button-next::after {
+  transform: rotate(45deg);
+  margin-right: 4px;
+}
+
+.swiper-horizontal > .swiper-pagination-bullets {
+  bottom: 24px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: auto !important;
+  display: flex !important;
+  gap: 9px;
+  align-items: center;
+  justify-content: center;
+}
+
+.swiper-pagination-bullet {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.6) !important;
+  opacity: 1 !important;
+  transition: all 0.25s ease;
+}
+
+.swiper-pagination-bullet-active {
+  width: 28px !important;
+  background: #ffffff !important;
+}
+
+@media only screen and (max-width: 575px) {
+  .button-prev,
+  .button-next {
+    width: 34px;
+    height: 34px;
+  }
+
+  .swiper-horizontal > .swiper-pagination-bullets {
+    bottom: 18px !important;
+    gap: 5px;
+  }
+
+  .swiper-pagination-bullet {
+    width: 6px !important;
+    height: 6px !important;
+  }
+
+  .swiper-pagination-bullet-active {
+    width: 18px !important;
+  }
+}

@@ -1,0 +1,154 @@
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlay } from "@fortawesome/free-solid-svg-icons";
+import { createAnimeSlug } from "@/src/utils/slug.utils";
+
+const RANGE_SIZE = 100;
+
+export default function EpisodeGrid({ id, anime, episodes = [] }) {
+  const [selectedRange, setSelectedRange] = useState(0);
+
+  const animeTitle = anime?.title || anime?.name || anime?.animeTitle || "anime";
+  const animeSlug = createAnimeSlug(animeTitle, id);
+
+  const sortedEpisodes = useMemo(() => {
+    return [...episodes].sort((a, b) => {
+      const aNo = Number(a.number || a.episode || a.episodeId || 0);
+      const bNo = Number(b.number || b.episode || b.episodeId || 0);
+      return aNo - bNo;
+    });
+  }, [episodes]);
+
+  const ranges = useMemo(() => {
+    const total = sortedEpisodes.length;
+    const result = [];
+
+    for (let start = 1; start <= total; start += RANGE_SIZE) {
+      const end = Math.min(start + RANGE_SIZE - 1, total);
+
+      result.push({
+        start,
+        end,
+        label: `${start}-${end}`,
+      });
+    }
+
+    return result;
+  }, [sortedEpisodes]);
+
+  const visibleEpisodes = useMemo(() => {
+    const range = ranges[selectedRange];
+    if (!range) return sortedEpisodes;
+
+    return sortedEpisodes.filter((ep, index) => {
+      const epNo = Number(ep.number || ep.episode || ep.episodeId || index + 1);
+      return epNo >= range.start && epNo <= range.end;
+    });
+  }, [sortedEpisodes, ranges, selectedRange]);
+
+  if (!episodes.length) {
+    return (
+      <div className="py-14 text-center text-gray-500">
+        No episodes found.
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-8">
+      {ranges.length > 1 && (
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-xs uppercase tracking-[0.18em] text-gray-500 font-black">
+              Episode Range:
+            </span>
+
+            <span className="text-white text-sm font-bold">
+              {ranges[selectedRange]?.label}
+            </span>
+          </div>
+
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {ranges.map((range, index) => (
+              <button
+                key={range.label}
+                onClick={() => setSelectedRange(index)}
+                className={`shrink-0 px-5 py-3 rounded-xl border text-sm font-bold transition ${
+                  selectedRange === index
+                    ? "bg-white text-black border-white"
+                    : "bg-[#111] text-gray-300 border-white/10 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                {range.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <h2 className="text-2xl font-black mb-5">Episodes</h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        {visibleEpisodes.map((ep, index) => {
+          const epNo = ep.number || ep.episode || ep.episodeId || index + 1;
+
+          const realTitle =
+            ep.title || ep.name || ep.episodeTitle || ep.japaneseTitle || "";
+
+          const epTitle =
+            realTitle &&
+            !String(realTitle).toLowerCase().startsWith("episode")
+              ? realTitle
+              : `Episode ${epNo}`;
+
+          const image =
+            ep.thumbnail ||
+            ep.snapshot ||
+            ep.preview ||
+            ep.still ||
+            ep.image ||
+            ep.img ||
+            "";
+
+          return (
+            <Link
+              key={ep.id || ep.session || `${id}-${epNo}`}
+              to={`/watch/${animeSlug}?ep=${epNo}`}
+              className="group relative h-[120px] overflow-hidden rounded-xl bg-[#101010] border border-white/10 hover:border-white/25 transition"
+            >
+              <div className="relative z-10 h-full flex items-center gap-4 p-3">
+                <div className="relative w-[130px] h-[78px] shrink-0 overflow-hidden rounded-lg bg-white/5">
+                  {image ? (
+                    <img
+                      src={image}
+                      alt={epTitle}
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-white/10 via-white/5 to-black flex items-center justify-center">
+                      <span className="text-xs text-gray-500 font-bold">
+                        EP {epNo}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1 pr-8">
+                  <h3 className="text-white font-bold text-[15px] leading-snug line-clamp-2">
+                    {epTitle}
+                  </h3>
+                </div>
+
+                <div className="absolute right-3 top-3 w-8 h-8 rounded-full bg-white/10 group-hover:bg-white group-hover:text-black text-white flex items-center justify-center transition">
+                  <FontAwesomeIcon icon={faPlay} className="text-xs ml-[2px]" />
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
