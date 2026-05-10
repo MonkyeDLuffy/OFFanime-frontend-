@@ -21,6 +21,11 @@
   pointer-events: none;
 }
 
+.banner-bg-image {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
 @media only screen and (max-width: 1300px) {
   .spotlight-overlay {
     background: linear-gradient(
