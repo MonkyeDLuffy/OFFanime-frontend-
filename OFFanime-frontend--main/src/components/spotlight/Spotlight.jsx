@@ -30,7 +30,7 @@ const Spotlight = ({ spotlights = [] }) => {
           fadeEffect={{
             crossFade: true,
           }}
-          speed={900}
+          speed={1600}
           navigation={{
             nextEl: ".spotlight-next",
             prevEl: ".spotlight-prev",
