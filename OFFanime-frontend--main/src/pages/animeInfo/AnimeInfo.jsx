@@ -5,8 +5,12 @@ import getAnimeInfo from "@/src/utils/getAnimeInfo.utils";
 import getEpisodes from "@/src/utils/getEpisodes.utils";
 import getRecommendations from "@/src/utils/getRecommendations.utils";
 import getSeasons from "@/src/utils/getSeasons.utils";
+import getJikanInfo from "@/src/utils/getJikanInfo.utils";
 
-import { createAnimeSlug, getAnimeIdFromSlug } from "@/src/utils/slug.utils";
+import {
+  createAnimeSlug,
+  getAnimeIdFromSlug,
+} from "@/src/utils/slug.utils";
 
 import Hero from "./components/Hero";
 import Seasons from "./components/Seasons";
@@ -23,9 +27,14 @@ export default function AnimeInfo() {
   const { id: routeId } = useParams();
   const navigate = useNavigate();
 
-  const id = useMemo(() => getAnimeIdFromSlug(routeId), [routeId]);
+  const id = useMemo(
+    () => getAnimeIdFromSlug(routeId),
+    [routeId]
+  );
 
   const [anime, setAnime] = useState(null);
+  const [jikanInfo, setJikanInfo] = useState(null);
+
   const [loading, setLoading] = useState(true);
 
   const [activeTab, setActiveTab] = useState("episodes");
@@ -53,7 +62,9 @@ export default function AnimeInfo() {
     async function loadMainInfo() {
       try {
         setLoading(true);
+
         setAnime(null);
+        setJikanInfo(null);
 
         setEpisodes([]);
         setSeasons([]);
@@ -67,6 +78,7 @@ export default function AnimeInfo() {
 
         setActiveTab("episodes");
 
+        // MAIN ANIME INFO
         const animeRes = await getAnimeInfo(id);
 
         if (!alive) return;
@@ -79,11 +91,28 @@ export default function AnimeInfo() {
           null;
 
         setAnime(animeData);
+
+        // JIKAN INFO
+        try {
+          const jikan = await getJikanInfo(id);
+
+          if (alive && jikan) {
+            setJikanInfo(jikan);
+          }
+        } catch (err) {
+          console.log("Failed to load Jikan:", err.message);
+        }
       } catch (error) {
         console.error("AnimeInfo main load error:", error);
-        if (alive) setAnime(null);
+
+        if (alive) {
+          setAnime(null);
+          setJikanInfo(null);
+        }
       } finally {
-        if (alive) setLoading(false);
+        if (alive) {
+          setLoading(false);
+        }
       }
     }
 
@@ -94,6 +123,7 @@ export default function AnimeInfo() {
     };
   }, [id]);
 
+  // FIX URL SLUG
   useEffect(() => {
     if (!anime || !id || !routeId) return;
 
@@ -103,15 +133,20 @@ export default function AnimeInfo() {
       anime.animeTitle ||
       anime.englishTitle ||
       anime.romajiTitle ||
+      jikanInfo?.titleEnglish ||
+      jikanInfo?.title ||
       "anime";
 
     const correctSlug = createAnimeSlug(title, id);
 
     if (routeId !== correctSlug) {
-      navigate(`/${correctSlug}`, { replace: true });
+      navigate(`/${correctSlug}`, {
+        replace: true,
+      });
     }
-  }, [anime, id, routeId, navigate]);
+  }, [anime, jikanInfo, id, routeId, navigate]);
 
+  // LOAD TABS
   useEffect(() => {
     if (!anime || !id) return;
     if (loadedTabs[activeTab]) return;
@@ -122,22 +157,43 @@ export default function AnimeInfo() {
       try {
         setTabLoading(true);
 
+        // EPISODES
         if (activeTab === "episodes") {
           const res = await getEpisodes(id);
-          const data = Array.isArray(res) ? res : res?.results || [];
-          if (alive) setEpisodes(data);
+
+          const data = Array.isArray(res)
+            ? res
+            : res?.results || [];
+
+          if (alive) {
+            setEpisodes(data);
+          }
         }
 
+        // RELATIONS
         if (activeTab === "relations") {
           const res = await getSeasons(id);
-          const data = Array.isArray(res) ? res : res?.results || [];
-          if (alive) setSeasons(data);
+
+          const data = Array.isArray(res)
+            ? res
+            : res?.results || [];
+
+          if (alive) {
+            setSeasons(data);
+          }
         }
 
+        // RECOMMENDATIONS
         if (activeTab === "recommendations") {
           const res = await getRecommendations(id);
-          const data = Array.isArray(res) ? res : res?.results || [];
-          if (alive) setRecommendations(data);
+
+          const data = Array.isArray(res)
+            ? res
+            : res?.results || [];
+
+          if (alive) {
+            setRecommendations(data);
+          }
         }
 
         if (alive) {
@@ -147,7 +203,10 @@ export default function AnimeInfo() {
           }));
         }
       } catch (error) {
-        console.error(`${activeTab} tab load error:`, error);
+        console.error(
+          `${activeTab} tab load error:`,
+          error
+        );
 
         if (alive) {
           setLoadedTabs((prev) => ({
@@ -156,7 +215,9 @@ export default function AnimeInfo() {
           }));
         }
       } finally {
-        if (alive) setTabLoading(false);
+        if (alive) {
+          setTabLoading(false);
+        }
       }
     }
 
@@ -167,14 +228,23 @@ export default function AnimeInfo() {
     };
   }, [activeTab, anime, id, loadedTabs]);
 
-  if (loading) return <MainSkeleton />;
+  // LOADING
+  if (loading) {
+    return <MainSkeleton />;
+  }
 
+  // ERROR
   if (!anime) {
     return (
       <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-3">Anime Not Found</h1>
-          <p className="text-gray-400">Failed to load anime information.</p>
+          <h1 className="text-4xl font-bold mb-3">
+            Anime Not Found
+          </h1>
+
+          <p className="text-gray-400">
+            Failed to load anime information.
+          </p>
         </div>
       </div>
     );
@@ -182,9 +252,15 @@ export default function AnimeInfo() {
 
   return (
     <div className="bg-[#0a0a0a] text-white min-h-screen">
-      <Hero anime={anime} />
+      {/* HERO */}
+      <Hero
+        anime={anime}
+        jikanInfo={jikanInfo}
+      />
 
+      {/* CONTENT */}
       <div className="max-w-7xl mx-auto px-6 pb-16">
+        {/* TABS */}
         <div className="mt-8 border-b border-white/10 flex gap-8 overflow-x-auto">
           {TABS.map((tab) => (
             <button
@@ -201,19 +277,28 @@ export default function AnimeInfo() {
           ))}
         </div>
 
+        {/* TAB CONTENT */}
         <div className="mt-8">
           {tabLoading ? (
             <TabSkeleton activeTab={activeTab} />
           ) : (
             <>
               {activeTab === "episodes" && (
-                <EpisodeGrid id={id} anime={anime} episodes={episodes} />
+                <EpisodeGrid
+                  id={id}
+                  anime={anime}
+                  episodes={episodes}
+                />
               )}
 
-              {activeTab === "relations" && <Seasons data={seasons} />}
+              {activeTab === "relations" && (
+                <Seasons data={seasons} />
+              )}
 
               {activeTab === "recommendations" && (
-                <Recommendations data={recommendations} />
+                <Recommendations
+                  data={recommendations}
+                />
               )}
             </>
           )}
@@ -222,6 +307,10 @@ export default function AnimeInfo() {
     </div>
   );
 }
+
+// ============================
+// MAIN SKELETON
+// ============================
 
 function MainSkeleton() {
   return (
@@ -262,11 +351,16 @@ function MainSkeleton() {
   );
 }
 
+// ============================
+// TAB SKELETON
+// ============================
+
 function TabSkeleton({ activeTab }) {
   if (activeTab === "episodes") {
     return (
       <div>
         <div className="h-8 w-36 rounded bg-white/10 animate-pulse mb-5" />
+
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {Array.from({ length: 12 }).map((_, i) => (
             <div
@@ -282,6 +376,7 @@ function TabSkeleton({ activeTab }) {
   return (
     <div>
       <div className="h-8 w-48 rounded bg-white/10 animate-pulse mb-5" />
+
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {Array.from({ length: 10 }).map((_, i) => (
           <div
