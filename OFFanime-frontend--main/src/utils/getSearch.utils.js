@@ -1,6 +1,4 @@
-const API =
-  import.meta.env.VITE_API_URL ||
-  "https://anime-details-api.onrender.com";
+const JIKAN_API = "https://anime-details-api.onrender.com";
 
 export default async function getSearch(keyword) {
   try {
@@ -9,8 +7,12 @@ export default async function getSearch(keyword) {
     if (!q || q.length < 2) return [];
 
     const response = await fetch(
-      `${API}/api/jikan/search?q=${encodeURIComponent(q)}`
+      `${JIKAN_API}/api/jikan/search?q=${encodeURIComponent(q)}`
     );
+
+    if (!response.ok) {
+      throw new Error(`Search API failed: ${response.status}`);
+    }
 
     const json = await response.json();
 
@@ -20,8 +22,8 @@ export default async function getSearch(keyword) {
       id: anime.malId,
       anilistId: anime.malId,
 
-      title: anime.titleEnglish || anime.title,
-      name: anime.titleEnglish || anime.title,
+      title: anime.titleEnglish || anime.title || "Anime",
+      name: anime.titleEnglish || anime.title || "Anime",
 
       poster: anime.poster || anime.image,
       image: anime.image || anime.poster,
