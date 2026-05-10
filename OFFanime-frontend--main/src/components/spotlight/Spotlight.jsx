@@ -30,7 +30,7 @@ const Spotlight = ({ spotlights = [] }) => {
           fadeEffect={{
             crossFade: true,
           }}
-          speed={800}
+          speed={1200}
           navigation={{
             nextEl: ".spotlight-next",
             prevEl: ".spotlight-prev",
@@ -39,7 +39,7 @@ const Spotlight = ({ spotlights = [] }) => {
             clickable: true,
           }}
           autoplay={{
-            delay: 5000,
+            delay: 6500,
             disableOnInteraction: false,
           }}
           modules={[
