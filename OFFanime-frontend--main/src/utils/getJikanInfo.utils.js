@@ -1,22 +1,29 @@
+import getMalId from "./getMalId.utils";
+
 const API =
-  import.meta.env.VITE_API_URL ||
-  "https://anime-details-api.onrender.com";
+  "https://anime-details-api.onrender.com/api/jikan/anime";
 
 export default async function getJikanInfo(anilistId) {
   try {
-    const response = await fetch(
-      `${API}/api/jikan/from-anilist/${anilistId}`
-    );
+    // convert anilist -> MAL
+    const malId = await getMalId(anilistId);
 
-    if (!response.ok) {
-      throw new Error("Failed to fetch Jikan info");
+    if (!malId) {
+      console.log("No MAL ID found");
+
+      return null;
     }
+
+    const response = await fetch(`${API}/${malId}`);
 
     const json = await response.json();
 
-    return json?.data || null;
+    if (!json?.data) return null;
+
+    return json.data;
   } catch (err) {
-    console.log("Jikan fetch failed:", err.message);
+    console.log("Jikan fetch failed:", err);
+
     return null;
   }
 }
