@@ -25,8 +25,17 @@ function Navbar() {
   const isSplashScreen = location.pathname === "/";
 
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      setScrolled(window.scrollY > 35);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 40);
+          ticking = false;
+        });
+
+        ticking = true;
+      }
     };
 
     handleScroll();
@@ -95,16 +104,12 @@ function Navbar() {
   return (
     <>
       <nav className="fixed top-4 left-0 w-full z-[9999] pointer-events-none">
-        <div
-          className={`mx-auto px-4 pointer-events-auto transition-all duration-500 ease-out ${
-            scrolled ? "max-w-[1060px]" : "max-w-[980px]"
-          }`}
-        >
+        <div className="max-w-[980px] mx-auto px-4 pointer-events-auto">
           <div
-            className={`rounded-full border flex items-center justify-between transition-all duration-500 ease-out ${
+            className={`h-[48px] rounded-full border flex items-center justify-between px-4 will-change-transform transform-gpu transition-[background-color,border-color,box-shadow,backdrop-filter,transform] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
               scrolled
-                ? "h-[58px] px-5 bg-black/85 border-white/15 shadow-[0_18px_90px_rgba(120,72,255,0.18)] backdrop-blur-2xl scale-[1.015]"
-                : "h-[48px] px-4 bg-black/75 border-white/10 shadow-[0_10px_60px_rgba(0,0,0,0.7)] backdrop-blur-xl scale-100"
+                ? "bg-black/88 border-white/16 shadow-[0_18px_80px_rgba(139,92,246,0.16)] backdrop-blur-2xl translate-y-[2px] scale-[1.012]"
+                : "bg-black/72 border-white/10 shadow-[0_10px_60px_rgba(0,0,0,0.62)] backdrop-blur-xl translate-y-0 scale-100"
             }`}
           >
             <div className="flex items-center gap-4">
@@ -117,21 +122,13 @@ function Navbar() {
 
               <Link
                 to="/home"
-                className={`text-white font-black tracking-tight leading-none transition-all duration-500 ${
-                  scrolled ? "text-[26px]" : "text-[23px]"
-                }`}
+                className="text-white text-[23px] font-black tracking-tight leading-none transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] hover:scale-105"
               >
                 OFF
               </Link>
             </div>
 
-            <div
-              className={`hidden md:flex items-center font-bold uppercase text-gray-400 transition-all duration-500 ${
-                scrolled
-                  ? "gap-9 text-[12px] tracking-[0.22em]"
-                  : "gap-7 text-[11px] tracking-[0.18em]"
-              }`}
-            >
+            <div className="hidden md:flex items-center gap-7 text-[11px] font-bold uppercase tracking-[0.18em] text-gray-400">
               <Link to="/home" className="hover:text-white transition">
                 Home
               </Link>
@@ -147,18 +144,14 @@ function Navbar() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSearchOpen(true)}
-                className={`rounded-full flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-500 ${
-                  scrolled ? "w-9 h-9" : "w-8 h-8"
-                }`}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition"
               >
                 <FontAwesomeIcon icon={faMagnifyingGlass} />
               </button>
 
               <Link
                 to="/random"
-                className={`rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/15 transition-all duration-500 ${
-                  scrolled ? "w-9 h-9 rotate-180" : "w-8 h-8 rotate-0"
-                }`}
+                className="w-8 h-8 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/15 transition"
               >
                 <FontAwesomeIcon icon={faRandom} />
               </Link>
