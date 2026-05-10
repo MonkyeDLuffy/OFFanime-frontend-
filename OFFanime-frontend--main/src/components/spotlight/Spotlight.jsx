@@ -1,17 +1,24 @@
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Autoplay, Pagination } from "swiper/modules";
+
+import {
+  Navigation,
+  Autoplay,
+  Pagination,
+  EffectFade,
+} from "swiper/modules";
 
 import "swiper/css";
 import "swiper/css/autoplay";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+import "swiper/css/effect-fade";
 
 import "./Spotlight.css";
 import Banner from "../banner/Banner";
 
 const Spotlight = ({ spotlights = [] }) => {
   return (
-    <section className="relative w-screen h-[700px] max-[1400px]:h-[650px] max-[1024px]:h-[560px] max-md:h-[470px] -mt-16 left-1/2 -translate-x-1/2 overflow-hidden">
+    <section className="relative w-screen h-[660px] max-[1400px]:h-[610px] max-[1024px]:h-[540px] max-md:h-[460px] -mt-16 left-1/2 -translate-x-1/2 overflow-hidden">
       {spotlights.length > 0 ? (
         <Swiper
           spaceBetween={0}
@@ -19,6 +26,11 @@ const Spotlight = ({ spotlights = [] }) => {
           loop={true}
           allowTouchMove={true}
           grabCursor={true}
+          effect="fade"
+          fadeEffect={{
+            crossFade: true,
+          }}
+          speed={900}
           navigation={{
             nextEl: ".spotlight-next",
             prevEl: ".spotlight-prev",
@@ -30,23 +42,31 @@ const Spotlight = ({ spotlights = [] }) => {
             delay: 5000,
             disableOnInteraction: false,
           }}
-          modules={[Navigation, Autoplay, Pagination]}
+          modules={[
+            Navigation,
+            Autoplay,
+            Pagination,
+            EffectFade,
+          ]}
           className="spotlight-swiper h-full w-full overflow-hidden relative"
         >
+          {/* BUTTONS */}
           <div className="absolute right-[38px] top-[145px] flex items-center gap-3 z-[30] max-md:hidden">
-            <button className="spotlight-prev" aria-label="Previous slide">
+            <button className="spotlight-prev">
               ‹
             </button>
-            <button className="spotlight-next" aria-label="Next slide">
+
+            <button className="spotlight-next">
               ›
             </button>
           </div>
 
           {spotlights.map((item, index) => (
-            <SwiperSlide className="relative h-full" key={item.id || index}>
-              <div className="spotlight-slide-zoom h-full">
-                <Banner item={item} index={index} spotlightFull />
-              </div>
+            <SwiperSlide
+              className="relative h-full"
+              key={item.id || index}
+            >
+              <Banner item={item} index={index} />
             </SwiperSlide>
           ))}
         </Swiper>
