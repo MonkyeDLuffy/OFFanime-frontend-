@@ -5,7 +5,6 @@ import {
   faBars,
   faRandom,
   faMagnifyingGlass,
-  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 
 import getSearch from "@/src/utils/getSearch.utils";
@@ -15,15 +14,26 @@ import Sidebar from "../sidebar/Sidebar";
 function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-
   const inputRef = useRef(null);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [suggestions, setSuggestions] = useState([]);
+  const [scrolled, setScrolled] = useState(false);
 
   const isSplashScreen = location.pathname === "/";
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 35);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     if (searchOpen && inputRef.current) inputRef.current.focus();
@@ -51,7 +61,7 @@ function Navbar() {
       } catch {
         setSuggestions([]);
       }
-    }, 250);
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [search]);
@@ -85,8 +95,18 @@ function Navbar() {
   return (
     <>
       <nav className="fixed top-4 left-0 w-full z-[9999] pointer-events-none">
-        <div className="max-w-[980px] mx-auto px-4 pointer-events-auto">
-          <div className="h-[48px] rounded-full bg-black/75 border border-white/10 shadow-[0_10px_60px_rgba(0,0,0,0.7)] backdrop-blur-xl flex items-center justify-between px-4">
+        <div
+          className={`mx-auto px-4 pointer-events-auto transition-all duration-500 ease-out ${
+            scrolled ? "max-w-[1060px]" : "max-w-[980px]"
+          }`}
+        >
+          <div
+            className={`rounded-full border flex items-center justify-between transition-all duration-500 ease-out ${
+              scrolled
+                ? "h-[58px] px-5 bg-black/85 border-white/15 shadow-[0_18px_90px_rgba(120,72,255,0.18)] backdrop-blur-2xl scale-[1.015]"
+                : "h-[48px] px-4 bg-black/75 border-white/10 shadow-[0_10px_60px_rgba(0,0,0,0.7)] backdrop-blur-xl scale-100"
+            }`}
+          >
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setIsSidebarOpen(true)}
@@ -97,17 +117,29 @@ function Navbar() {
 
               <Link
                 to="/home"
-                className="text-white text-[23px] font-black tracking-tight leading-none"
+                className={`text-white font-black tracking-tight leading-none transition-all duration-500 ${
+                  scrolled ? "text-[26px]" : "text-[23px]"
+                }`}
               >
                 OFF
               </Link>
             </div>
 
-            <div className="hidden md:flex items-center gap-7 text-[11px] font-bold uppercase tracking-[0.18em] text-gray-400">
+            <div
+              className={`hidden md:flex items-center font-bold uppercase text-gray-400 transition-all duration-500 ${
+                scrolled
+                  ? "gap-9 text-[12px] tracking-[0.22em]"
+                  : "gap-7 text-[11px] tracking-[0.18em]"
+              }`}
+            >
               <Link to="/home" className="hover:text-white transition">
                 Home
               </Link>
-              <Link to="/recently-updated" className="hover:text-white transition">
+
+              <Link
+                to="/recently-updated"
+                className="hover:text-white transition"
+              >
                 Latest
               </Link>
             </div>
@@ -115,14 +147,18 @@ function Navbar() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSearchOpen(true)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition"
+                className={`rounded-full flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-500 ${
+                  scrolled ? "w-9 h-9" : "w-8 h-8"
+                }`}
               >
                 <FontAwesomeIcon icon={faMagnifyingGlass} />
               </button>
 
               <Link
                 to="/random"
-                className="w-8 h-8 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/15 transition"
+                className={`rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-gray-300 hover:text-white hover:bg-white/15 transition-all duration-500 ${
+                  scrolled ? "w-9 h-9 rotate-180" : "w-8 h-8 rotate-0"
+                }`}
               >
                 <FontAwesomeIcon icon={faRandom} />
               </Link>
@@ -165,7 +201,8 @@ function Navbar() {
                   const id = item.id || item.anilistId;
                   const title = item.title || item.name || "Anime";
                   const poster = item.poster || item.image;
-                  const banner = item.banner || item.bannerImage || item.image || poster;
+                  const banner =
+                    item.banner || item.bannerImage || item.image || poster;
                   const type = item.type || "TV";
                   const year = item.year || item.releaseDate || "?";
                   const eps = item.episodes || item.totalEpisodes || "?";
