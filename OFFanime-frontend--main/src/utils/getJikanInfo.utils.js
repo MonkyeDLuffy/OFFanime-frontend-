@@ -1,24 +1,16 @@
-import getMalId from "./getMalId.utils";
-
 const API =
   "https://anime-details-api.onrender.com/api/jikan/anime";
 
-export default async function getJikanInfo(anilistId) {
+export default async function getJikanInfo(id) {
   try {
-    // convert anilist -> MAL
-    const malId = await getMalId(anilistId);
-
-    if (!malId) {
-      console.log("No MAL ID found");
-
-      return null;
-    }
-
-    const response = await fetch(`${API}/${malId}`);
+    const response = await fetch(`${API}/${id}`);
 
     const json = await response.json();
 
-    if (!json?.data) return null;
+    if (!json?.data) {
+      console.log("No Jikan data found");
+      return null;
+    }
 
     return json.data;
   } catch (err) {
