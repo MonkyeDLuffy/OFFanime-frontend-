@@ -20,6 +20,7 @@ function Navbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [suggestions, setSuggestions] = useState([]);
+  const [searching, setSearching] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   const isSplashScreen = location.pathname === "/";
@@ -33,7 +34,6 @@ function Navbar() {
           setScrolled(window.scrollY > 40);
           ticking = false;
         });
-
         ticking = true;
       }
     };
@@ -60,25 +60,39 @@ function Navbar() {
 
     if (keyword.length < 2) {
       setSuggestions([]);
+      setSearching(false);
       return;
     }
 
+    let alive = true;
+
     const timer = setTimeout(async () => {
       try {
-        const results = await getSearch(keyword, 1);
-        setSuggestions(Array.isArray(results) ? results.slice(0, 10) : []);
-      } catch {
-        setSuggestions([]);
-      }
-    }, 300);
+        setSearching(true);
 
-    return () => clearTimeout(timer);
+        const results = await getSearch(keyword);
+
+        if (!alive) return;
+
+        setSuggestions(Array.isArray(results) ? results.slice(0, 10) : []);
+      } catch (error) {
+        if (alive) setSuggestions([]);
+      } finally {
+        if (alive) setSearching(false);
+      }
+    }, 350);
+
+    return () => {
+      alive = false;
+      clearTimeout(timer);
+    };
   }, [search]);
 
   const closeSearch = () => {
     setSearchOpen(false);
     setSearch("");
     setSuggestions([]);
+    setSearching(false);
   };
 
   const goToSearchPage = () => {
@@ -90,7 +104,7 @@ function Navbar() {
   };
 
   const openAnime = (item) => {
-    const id = item?.id || item?.anilistId;
+    const id = item?.anilistId || item?.id;
     const title = item?.title || item?.name || item?.animeTitle || "anime";
 
     if (!id) return;
@@ -190,57 +204,68 @@ function Navbar() {
               </div>
 
               <div className="mt-8 space-y-2">
-                {suggestions.map((item) => {
-                  const id = item.id || item.anilistId;
-                  const title = item.title || item.name || "Anime";
-                  const poster = item.poster || item.image;
-                  const banner =
-                    item.banner || item.bannerImage || item.image || poster;
-                  const type = item.type || "TV";
-                  const year = item.year || item.releaseDate || "?";
-                  const eps = item.episodes || item.totalEpisodes || "?";
-
-                  return (
-                    <button
-                      key={id}
-                      onClick={() => openAnime(item)}
-                      className="relative w-full h-[92px] overflow-hidden rounded-xl border border-white/10 bg-[#111] text-left hover:border-white/25 transition group"
-                    >
-                      {banner && (
-                        <img
-                          src={banner}
-                          alt={title}
-                          className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-45 transition"
-                        />
-                      )}
-
-                      <div className="absolute inset-0 bg-gradient-to-r from-black via-black/75 to-black/30" />
-
-                      <div className="relative z-10 h-full flex items-center gap-4 px-4">
-                        <img
-                          src={poster}
-                          alt={title}
-                          className="w-[52px] h-[70px] rounded-lg object-cover"
-                        />
-
-                        <div className="min-w-0">
-                          <p className="text-white font-bold text-base line-clamp-1">
-                            {title}
-                          </p>
-                          <p className="text-gray-400 text-sm mt-1">
-                            {type} • {year} • {eps} eps
-                          </p>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-
-                {search.trim().length >= 2 && suggestions.length === 0 && (
+                {searching && (
                   <div className="text-center text-gray-500 py-10">
-                    No results found
+                    Searching...
                   </div>
                 )}
+
+                {!searching &&
+                  suggestions.map((item) => {
+                    const id = item.anilistId || item.id;
+                    const title = item.title || item.name || "Anime";
+                    const poster = item.poster || item.image;
+                    const banner =
+                      item.banner || item.bannerImage || item.image || poster;
+                    const type = item.type || item.format || "TV";
+                    const year = item.year || item.seasonYear || "?";
+                    const eps = item.episodes || item.totalEpisodes || "?";
+
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => openAnime(item)}
+                        className="relative w-full h-[92px] overflow-hidden rounded-xl border border-white/10 bg-[#111] text-left hover:border-white/25 transition group"
+                      >
+                        {banner && (
+                          <img
+                            src={banner}
+                            alt={title}
+                            className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-45 transition"
+                          />
+                        )}
+
+                        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/75 to-black/30" />
+
+                        <div className="relative z-10 h-full flex items-center gap-4 px-4">
+                          {poster && (
+                            <img
+                              src={poster}
+                              alt={title}
+                              className="w-[52px] h-[70px] rounded-lg object-cover"
+                            />
+                          )}
+
+                          <div className="min-w-0">
+                            <p className="text-white font-bold text-base line-clamp-1">
+                              {title}
+                            </p>
+                            <p className="text-gray-400 text-sm mt-1">
+                              {type} • {year} • {eps} eps
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+
+                {!searching &&
+                  search.trim().length >= 2 &&
+                  suggestions.length === 0 && (
+                    <div className="text-center text-gray-500 py-10">
+                      No results found
+                    </div>
+                  )}
               </div>
             </div>
           </div>
