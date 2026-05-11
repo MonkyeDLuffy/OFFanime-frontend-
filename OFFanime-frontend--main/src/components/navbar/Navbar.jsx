@@ -15,6 +15,7 @@ function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const inputRef = useRef(null);
+  const searchTimerRef = useRef(null);
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -58,33 +59,33 @@ function Navbar() {
   useEffect(() => {
     const keyword = search.trim();
 
-    if (keyword.length < 2) {
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current);
+    }
+
+    if (keyword.length < 3) {
       setSuggestions([]);
       setSearching(false);
       return;
     }
 
-    let alive = true;
+    setSearching(true);
 
-    const timer = setTimeout(async () => {
+    searchTimerRef.current = setTimeout(async () => {
       try {
-        setSearching(true);
-
         const results = await getSearch(keyword);
-
-        if (!alive) return;
-
         setSuggestions(Array.isArray(results) ? results.slice(0, 10) : []);
       } catch (error) {
-        if (alive) setSuggestions([]);
+        setSuggestions([]);
       } finally {
-        if (alive) setSearching(false);
+        setSearching(false);
       }
-    }, 350);
+    }, 650);
 
     return () => {
-      alive = false;
-      clearTimeout(timer);
+      if (searchTimerRef.current) {
+        clearTimeout(searchTimerRef.current);
+      }
     };
   }, [search]);
 
@@ -93,6 +94,10 @@ function Navbar() {
     setSearch("");
     setSuggestions([]);
     setSearching(false);
+
+    if (searchTimerRef.current) {
+      clearTimeout(searchTimerRef.current);
+    }
   };
 
   const goToSearchPage = () => {
@@ -260,7 +265,7 @@ function Navbar() {
                   })}
 
                 {!searching &&
-                  search.trim().length >= 2 &&
+                  search.trim().length >= 3 &&
                   suggestions.length === 0 && (
                     <div className="text-center text-gray-500 py-10">
                       No results found
