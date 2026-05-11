@@ -1,10 +1,16 @@
 const API = "https://anime-details-api.onrender.com";
 
+const memoryCache = new Map();
+
 export default async function getSearch(keyword) {
   try {
-    const q = keyword?.trim();
+    const q = keyword?.trim().toLowerCase();
 
-    if (!q || q.length < 2) return [];
+    if (!q || q.length < 3) return [];
+
+    if (memoryCache.has(q)) {
+      return memoryCache.get(q);
+    }
 
     const response = await fetch(
       `${API}/api/search?keyword=${encodeURIComponent(q)}`
@@ -15,8 +21,11 @@ export default async function getSearch(keyword) {
     }
 
     const json = await response.json();
+    const results = Array.isArray(json?.results) ? json.results : [];
 
-    return json?.results || [];
+    memoryCache.set(q, results);
+
+    return results;
   } catch (error) {
     console.log("Search failed:", error.message);
     return [];
