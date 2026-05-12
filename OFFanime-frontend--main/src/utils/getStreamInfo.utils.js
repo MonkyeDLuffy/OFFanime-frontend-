@@ -2,7 +2,8 @@ export default async function getStreamInfo(
   animeId,
   episodeId,
   provider = "megaplay",
-  type = "sub"
+  type = "sub",
+  title = ""
 ) {
   const lang = type === "dub" ? "dub" : "sub";
 
@@ -16,7 +17,7 @@ export default async function getStreamInfo(
       ""
     )}/watch?anilistId=${encodeURIComponent(
       animeId
-    )}&ep=${encodeURIComponent(episodeId)}`;
+    )}&ep=${encodeURIComponent(episodeId)}&audio=${lang}`;
 
     console.log("AnimePahe API URL:", url);
 
@@ -32,21 +33,49 @@ export default async function getStreamInfo(
       throw new Error(data.error);
     }
 
-    const proxiedUrl =
-      lang === "dub"
-        ? data?.streams?.dub?.[0]?.url
-        : data?.streams?.sub?.[0]?.url;
+    const allStreams = data?.streams?.all || data?.selected?.streams || [];
 
-    if (!proxiedUrl) {
-      throw new Error(`AnimePahe ${lang} stream not found`);
+    const filtered = allStreams.filter((item) => {
+      const isDub = item?.original?.isDub === true;
+      return lang === "dub" ? isDub : !isDub;
+    });
+
+    const qualities = ["360p", "720p", "1080p"]
+      .map((quality) => {
+        const found = filtered.find((item) => item.quality === quality);
+
+        if (!found) return null;
+
+        return {
+          quality,
+          label: `Kiwi-Stream-${quality}`,
+          embed: found?.original?.embed || "",
+          url: found?.url || "",
+          rawUrl: found?.rawUrl || "",
+          item: found,
+        };
+      })
+      .filter(Boolean);
+
+    const defaultSource =
+      qualities.find((x) => x.quality === "720p") ||
+      qualities.find((x) => x.quality === "1080p") ||
+      qualities.find((x) => x.quality === "360p") ||
+      qualities[0];
+
+    if (!defaultSource?.embed) {
+      throw new Error(`AnimePahe ${lang} embed not found`);
     }
 
     return {
       provider: "animepahe",
       iframe: true,
-      url: `https://www.m3u8player.online/embed/m3u8?url=${encodeURIComponent(
-        proxiedUrl
-      )}`,
+      type: lang,
+      title,
+      url: defaultSource.embed,
+      embed: defaultSource.embed,
+      selectedQuality: defaultSource.quality,
+      qualities,
       raw: data,
     };
   }
@@ -57,6 +86,7 @@ export default async function getStreamInfo(
   return {
     provider: "megaplay",
     iframe: true,
+    type: lang,
     url: `${megaplay.replace(
       /\/$/,
       ""
