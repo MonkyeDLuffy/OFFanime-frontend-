@@ -16,6 +16,8 @@ import getServers from "@/src/utils/getServers.utils";
 import getStreamInfo from "@/src/utils/getStreamInfo.utils";
 import { createAnimeSlug, getAnimeIdFromSlug } from "@/src/utils/slug.utils";
 
+const ANIMEPAHE_API = "https://anime-streaming-system-1.onrender.com";
+
 export default function Watch() {
   const { id: animeSlug } = useParams();
   const animeId = getAnimeIdFromSlug(animeSlug);
@@ -31,12 +33,15 @@ export default function Watch() {
   const [episodes, setEpisodes] = useState([]);
   const [episode, setEpisode] = useState(initialEp);
   const [servers, setServers] = useState([]);
+
   const [selectedServer, setSelectedServer] = useState({
-    id: "megaplay-sub",
-    name: "MegaPlay",
-    provider: "megaplay",
+    id: "animepahe-sub",
+    name: "AnimePahe",
+    provider: "animepahe",
     type: "sub",
   });
+
+  const [selectedQuality, setSelectedQuality] = useState("720p");
 
   const [stream, setStream] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -63,38 +68,37 @@ export default function Watch() {
     : animeSlug;
 
   useEffect(() => {
-  if (!anime || !episode) return;
+    if (!anime || !episode) return;
 
-  const saved =
-    JSON.parse(localStorage.getItem("continueWatching")) || [];
+    const saved = JSON.parse(localStorage.getItem("continueWatching")) || [];
 
-  const item = {
-    id: anime.id || animeId,
-    title,
-    poster:
-      anime.poster ||
-      anime.image ||
-      anime.coverImage?.extraLarge ||
-      anime.coverImage?.large ||
-      anime.coverImage ||
-      "",
-    episode,
-    currentTime: 1,
-    duration: 100,
-    updatedAt: Date.now(),
-  };
+    const item = {
+      id: anime.id || animeId,
+      title,
+      poster:
+        anime.poster ||
+        anime.image ||
+        anime.coverImage?.extraLarge ||
+        anime.coverImage?.large ||
+        anime.coverImage ||
+        "",
+      episode,
+      currentTime: 1,
+      duration: 100,
+      updatedAt: Date.now(),
+    };
 
-  const filtered = saved.filter(
-    (x) =>
-      String(x.id) !== String(item.id) ||
-      String(x.episode) !== String(item.episode)
-  );
+    const filtered = saved.filter(
+      (x) =>
+        String(x.id) !== String(item.id) ||
+        String(x.episode) !== String(item.episode)
+    );
 
-  localStorage.setItem(
-    "continueWatching",
-    JSON.stringify([item, ...filtered].slice(0, 12))
-  );
-}, [anime, animeId, episode, title]);
+    localStorage.setItem(
+      "continueWatching",
+      JSON.stringify([item, ...filtered].slice(0, 12))
+    );
+  }, [anime, animeId, episode, title]);
 
   useEffect(() => {
     if (!query.get("ep")) {
@@ -118,7 +122,11 @@ export default function Watch() {
         if (!alive) return;
 
         const cleanAnime =
-          animeRes?.results || animeRes?.data || animeRes?.anime || animeRes || null;
+          animeRes?.results ||
+          animeRes?.data ||
+          animeRes?.anime ||
+          animeRes ||
+          null;
 
         const cleanEpisodes = Array.isArray(episodeRes)
           ? episodeRes
@@ -126,18 +134,66 @@ export default function Watch() {
 
         setAnime(cleanAnime);
         setEpisodes(Array.isArray(cleanEpisodes) ? cleanEpisodes : []);
-        setServers(Array.isArray(serverRes) ? serverRes : []);
+
+        const fallbackServers = [
+          {
+            id: "megaplay-sub",
+            name: "MegaPlay",
+            provider: "megaplay",
+            type: "sub",
+          },
+          {
+            id: "megaplay-dub",
+            name: "MegaPlay",
+            provider: "megaplay",
+            type: "dub",
+          },
+          {
+            id: "animepahe-sub",
+            name: "AnimePahe",
+            provider: "animepahe",
+            type: "sub",
+          },
+          {
+            id: "animepahe-dub",
+            name: "AnimePahe",
+            provider: "animepahe",
+            type: "dub",
+          },
+        ];
+
+        setServers(Array.isArray(serverRes) && serverRes.length ? serverRes : fallbackServers);
       } catch (err) {
         console.error("Watch page load error:", err);
         setAnime(null);
         setEpisodes([]);
 
-        try {
-          const fallbackServers = await getServers();
-          setServers(Array.isArray(fallbackServers) ? fallbackServers : []);
-        } catch {
-          setServers([]);
-        }
+        setServers([
+          {
+            id: "megaplay-sub",
+            name: "MegaPlay",
+            provider: "megaplay",
+            type: "sub",
+          },
+          {
+            id: "megaplay-dub",
+            name: "MegaPlay",
+            provider: "megaplay",
+            type: "dub",
+          },
+          {
+            id: "animepahe-sub",
+            name: "AnimePahe",
+            provider: "animepahe",
+            type: "sub",
+          },
+          {
+            id: "animepahe-dub",
+            name: "AnimePahe",
+            provider: "animepahe",
+            type: "dub",
+          },
+        ]);
       } finally {
         if (alive) setLoading(false);
       }
@@ -200,6 +256,26 @@ export default function Watch() {
     }
   }, [loading, animeId, episode]);
 
+  async function loadAnimePaheStream() {
+    const audio = selectedServer.type === "dub" ? "dub" : "sub";
+
+    const res = await fetch(
+      `${ANIMEPAHE_API}/watch?anilistId=${animeId}&ep=${episode}&audio=${audio}`
+    );
+
+    const json = await res.json();
+
+    if (json?.error) {
+      throw new Error(json.error);
+    }
+
+    return {
+      provider: "animepahe",
+      type: audio,
+      raw: json,
+    };
+  }
+
   useEffect(() => {
     let alive = true;
 
@@ -212,13 +288,19 @@ export default function Watch() {
       setStream(null);
 
       try {
-        const data = await getStreamInfo(
-          animeId,
-          episode,
-          selectedServer.provider,
-          selectedServer.type,
-          title
-        );
+        let data;
+
+        if (selectedServer.provider === "animepahe") {
+          data = await loadAnimePaheStream();
+        } else {
+          data = await getStreamInfo(
+            animeId,
+            episode,
+            selectedServer.provider,
+            selectedServer.type,
+            title
+          );
+        }
 
         if (!alive) return;
 
@@ -312,9 +394,61 @@ export default function Watch() {
     }
   };
 
-  const iframeUrl = stream?.url
-    ? `${stream.url}${stream.url.includes("?") ? "&" : "?"}reload=${reloadKey}`
-    : "";
+  const animePaheQualitySections = useMemo(() => {
+    if (stream?.provider !== "animepahe") return [];
+
+    const audio = selectedServer.type === "dub";
+    const allStreams = stream?.raw?.streams?.all || stream?.raw?.selected?.streams || [];
+
+    const filtered = allStreams.filter((item) => {
+      const isDub = item?.original?.isDub === true;
+      return audio ? isDub : !isDub;
+    });
+
+    const qualityOrder = ["360p", "720p", "1080p"];
+    return qualityOrder
+      .map((quality) => {
+        const found = filtered.find((x) => x.quality === quality);
+        if (!found) return null;
+
+        return {
+          quality,
+          label: `Kiwi-Stream-${quality}`,
+          embed: found?.original?.embed,
+          url: found?.url,
+          rawUrl: found?.rawUrl,
+          item: found,
+        };
+      })
+      .filter(Boolean);
+  }, [stream, selectedServer.type]);
+
+  const selectedAnimePaheSource = useMemo(() => {
+    if (stream?.provider !== "animepahe") return null;
+
+    return (
+      animePaheQualitySections.find((x) => x.quality === selectedQuality) ||
+      animePaheQualitySections.find((x) => x.quality === "720p") ||
+      animePaheQualitySections[0] ||
+      null
+    );
+  }, [stream, animePaheQualitySections, selectedQuality]);
+
+  const iframeUrl = useMemo(() => {
+    if (stream?.provider === "animepahe") {
+      const embed = selectedAnimePaheSource?.embed;
+
+      if (!embed) return "";
+
+      return `${embed}${embed.includes("?") ? "&" : "?"}reload=${reloadKey}`;
+    }
+
+    const normalUrl = stream?.url || stream?.embed || "";
+
+    if (!normalUrl) return "";
+
+    return `${normalUrl}${normalUrl.includes("?") ? "&" : "?"}reload=${reloadKey}`;
+  }, [stream, selectedAnimePaheSource, reloadKey]);
 
   if (loading) {
     return (
@@ -388,9 +522,9 @@ export default function Watch() {
                 </div>
               )}
 
-              {stream?.url && !showSupportLayer ? (
+              {iframeUrl && !showSupportLayer ? (
                 <iframe
-                  key={`${animeId}-${episode}-${selectedServer.id}-${reloadKey}`}
+                  key={`${animeId}-${episode}-${selectedServer.id}-${selectedQuality}-${reloadKey}`}
                   src={iframeUrl}
                   title={`${title} Episode ${episode}`}
                   className="w-full h-full bg-black"
@@ -456,6 +590,7 @@ export default function Watch() {
                         key={server.id}
                         onClick={() => {
                           setSelectedServer(server);
+                          setSelectedQuality("720p");
                           setReloadKey((prev) => prev + 1);
                           setStream(null);
                           setIframeLoaded(false);
@@ -488,6 +623,45 @@ export default function Watch() {
                   })}
                 </div>
               </div>
+
+              {selectedServer.provider === "animepahe" && (
+                <div className="mt-5">
+                  <p className="text-sm text-gray-400 mb-2">
+                    {selectedServer.type.toUpperCase()} Quality
+                  </p>
+
+                  <div className="flex flex-wrap gap-3">
+                    {animePaheQualitySections.length === 0 ? (
+                      <p className="text-gray-500 text-sm">
+                        No AnimePahe quality found.
+                      </p>
+                    ) : (
+                      animePaheQualitySections.map((section) => {
+                        const isActive = selectedQuality === section.quality;
+
+                        return (
+                          <button
+                            key={section.quality}
+                            onClick={() => {
+                              setSelectedQuality(section.quality);
+                              setIframeLoaded(false);
+                              setReloadKey((prev) => prev + 1);
+                            }}
+                            className={`px-4 py-2 rounded-xl border text-sm font-semibold transition ${
+                              isActive
+                                ? "bg-white text-black border-white"
+                                : "bg-white/10 text-white border-white/10 hover:bg-white/15"
+                            }`}
+                          >
+                            <FontAwesomeIcon icon={faPlay} className="mr-2 text-xs" />
+                            {section.label}
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
