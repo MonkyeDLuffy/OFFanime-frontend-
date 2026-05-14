@@ -75,6 +75,28 @@ function App() {
                   }
                 />
 
+                <Route
+                  path="/top-airing"
+                  element={<Category path="top-airing" label="Top Airing" />}
+                />
+
+                <Route
+                  path="/most-favorite"
+                  element={
+                    <Category path="most-favorite" label="Most Favorite" />
+                  }
+                />
+
+                <Route
+                  path="/latest-completed"
+                  element={
+                    <Category
+                      path="latest-completed"
+                      label="Latest Completed"
+                    />
+                  }
+                />
+
                 <Route path="/search" element={<Search />} />
                 <Route path="/search/:keyword" element={<Search />} />
 
@@ -112,6 +134,7 @@ function App() {
                   path="/404-not-found-page"
                   element={<Error error="404" />}
                 />
+
                 <Route path="/error-page" element={<Error />} />
 
                 <Route path="/:id" element={<AnimeInfo />} />
