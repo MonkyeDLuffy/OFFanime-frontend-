@@ -35,24 +35,33 @@ function Navbar() {
           setScrolled(window.scrollY > 40);
           ticking = false;
         });
+
         ticking = true;
       }
     };
 
     handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    window.addEventListener("scroll", handleScroll, {
+      passive: true,
+    });
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
-    if (searchOpen && inputRef.current) inputRef.current.focus();
+    if (searchOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
 
     const closeOnEsc = (e) => {
-      if (e.key === "Escape") closeSearch();
+      if (e.key === "Escape") {
+        closeSearch();
+      }
     };
 
     window.addEventListener("keydown", closeOnEsc);
+
     return () => window.removeEventListener("keydown", closeOnEsc);
   }, [searchOpen]);
 
@@ -74,7 +83,12 @@ function Navbar() {
     searchTimerRef.current = setTimeout(async () => {
       try {
         const results = await getSearch(keyword);
-        setSuggestions(Array.isArray(results) ? results.slice(0, 10) : []);
+
+        setSuggestions(
+          Array.isArray(results)
+            ? results.slice(0, 10)
+            : []
+        );
       } catch (error) {
         setSuggestions([]);
       } finally {
@@ -102,19 +116,27 @@ function Navbar() {
 
   const goToSearchPage = () => {
     const value = search.trim();
+
     if (!value) return;
 
     closeSearch();
+
     navigate(`/search?keyword=${encodeURIComponent(value)}`);
   };
 
   const openAnime = (item) => {
     const id = item?.anilistId || item?.id;
-    const title = item?.title || item?.name || item?.animeTitle || "anime";
+
+    const title =
+      item?.title ||
+      item?.name ||
+      item?.animeTitle ||
+      "anime";
 
     if (!id) return;
 
     closeSearch();
+
     navigate(`/${createAnimeSlug(title, id)}`);
   };
 
@@ -148,7 +170,10 @@ function Navbar() {
             </div>
 
             <div className="hidden md:flex items-center gap-7 text-[11px] font-bold uppercase tracking-[0.18em] text-gray-400">
-              <Link to="/home" className="hover:text-white transition">
+              <Link
+                to="/home"
+                className="hover:text-white transition"
+              >
                 Home
               </Link>
 
@@ -157,6 +182,13 @@ function Navbar() {
                 className="hover:text-white transition"
               >
                 Latest
+              </Link>
+
+              <Link
+                to="/schedule"
+                className="hover:text-white transition"
+              >
+                Schedule
               </Link>
             </div>
 
@@ -194,7 +226,9 @@ function Navbar() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") goToSearchPage();
+                    if (e.key === "Enter") {
+                      goToSearchPage();
+                    }
                   }}
                   placeholder="Search anime..."
                   className="w-full bg-transparent outline-none text-white text-xl"
@@ -217,14 +251,39 @@ function Navbar() {
 
                 {!searching &&
                   suggestions.map((item) => {
-                    const id = item.anilistId || item.id;
-                    const title = item.title || item.name || "Anime";
-                    const poster = item.poster || item.image;
+                    const id =
+                      item.anilistId ||
+                      item.id;
+
+                    const title =
+                      item.title ||
+                      item.name ||
+                      "Anime";
+
+                    const poster =
+                      item.poster ||
+                      item.image;
+
                     const banner =
-                      item.banner || item.bannerImage || item.image || poster;
-                    const type = item.type || item.format || "TV";
-                    const year = item.year || item.seasonYear || "?";
-                    const eps = item.episodes || item.totalEpisodes || "?";
+                      item.banner ||
+                      item.bannerImage ||
+                      item.image ||
+                      poster;
+
+                    const type =
+                      item.type ||
+                      item.format ||
+                      "TV";
+
+                    const year =
+                      item.year ||
+                      item.seasonYear ||
+                      "?";
+
+                    const eps =
+                      item.episodes ||
+                      item.totalEpisodes ||
+                      "?";
 
                     return (
                       <button
@@ -255,6 +314,7 @@ function Navbar() {
                             <p className="text-white font-bold text-base line-clamp-1">
                               {title}
                             </p>
+
                             <p className="text-gray-400 text-sm mt-1">
                               {type} • {year} • {eps} eps
                             </p>
@@ -277,7 +337,10 @@ function Navbar() {
         </div>
       )}
 
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+      />
     </>
   );
 }
