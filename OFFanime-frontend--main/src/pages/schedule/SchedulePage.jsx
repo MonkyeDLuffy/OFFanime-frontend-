@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 
 const API = "https://anime-details-api.onrender.com";
 
@@ -6,20 +7,28 @@ function getDateLabel(offset) {
   const date = new Date();
   date.setDate(date.getDate() + offset);
 
+  const value = date.toISOString().split("T")[0];
+
   return {
     date,
+    value,
     label:
       offset === 0
         ? "Today"
         : offset === 1
         ? "Tomorrow"
         : "Day After Tomorrow",
-    value: date.toISOString().split("T")[0],
+    dayName: date.toLocaleDateString("en-US", { weekday: "long" }),
+    shortDate: date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    }),
   };
 }
 
 export default function SchedulePage() {
-  const days = [getDateLabel(0), getDateLabel(1), getDateLabel(2)];
+  const days = useMemo(() => [getDateLabel(0), getDateLabel(1), getDateLabel(2)], []);
+
   const [activeDay, setActiveDay] = useState(days[0]);
   const [schedule, setSchedule] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -32,7 +41,7 @@ export default function SchedulePage() {
         const res = await fetch(`${API}/api/schedule?date=${activeDay.value}`);
         const json = await res.json();
 
-        setSchedule(json?.results || []);
+        setSchedule(Array.isArray(json?.results) ? json.results : []);
       } catch (err) {
         console.log("Schedule load failed:", err);
         setSchedule([]);
@@ -47,13 +56,16 @@ export default function SchedulePage() {
   return (
     <div className="min-h-screen bg-[#050505] text-white pt-28 pb-16">
       <div className="max-w-[1400px] mx-auto px-4">
-        <h1 className="text-3xl sm:text-5xl font-black mb-3">
-          Anime Schedule
-        </h1>
+        <div className="mb-10">
+          <h1 className="text-4xl sm:text-6xl font-black tracking-tight">
+            Anime Schedule
+          </h1>
 
-        <p className="text-white/50 mb-8">
-          Showing only today, tomorrow, and day after tomorrow to reduce API load.
-        </p>
+          <p className="text-white/45 mt-4 max-w-2xl">
+            Schedule page is separated from home to reduce AniList calls. Only
+            today, tomorrow, and day after tomorrow are shown.
+          </p>
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10">
           {days.map((day) => {
@@ -65,48 +77,80 @@ export default function SchedulePage() {
                 onClick={() => setActiveDay(day)}
                 className={`rounded-2xl px-5 py-5 border text-left transition ${
                   active
-                    ? "bg-white text-black border-white"
-                    : "bg-white/5 text-white border-white/10 hover:bg-white/10"
+                    ? "bg-white text-black border-white shadow-[0_18px_60px_rgba(255,255,255,0.12)]"
+                    : "bg-white/[0.04] text-white border-white/10 hover:bg-white/[0.08]"
                 }`}
               >
-                <div className="font-bold text-lg">{day.label}</div>
-                <div className={active ? "text-black/60" : "text-white/50"}>
-                  {day.value}
+                <div className="font-black text-xl">{day.label}</div>
+
+                <div
+                  className={`mt-1 text-sm ${
+                    active ? "text-black/60" : "text-white/45"
+                  }`}
+                >
+                  {day.dayName} • {day.shortDate}
                 </div>
               </button>
             );
           })}
         </div>
 
-        {loading ? (
-          <div className="text-white/50">Loading schedule...</div>
-        ) : schedule.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center text-white/50">
-            No schedule data found.
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {schedule.map((item, index) => (
-              <div
-                key={item.id || index}
-                className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4"
-              >
-                <div>
-                  <h2 className="font-bold text-lg">
-                    {item.title || item.name || "Anime"}
-                  </h2>
-                  <p className="text-white/50 text-sm">
-                    Episode {item.episode || item.nextEpisode || "N/A"}
-                  </p>
-                </div>
+        <div className="rounded-3xl border border-white/10 bg-white/[0.03] overflow-hidden">
+          <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-white/10">
+            <div>
+              <h2 className="font-black text-xl">{activeDay.label}</h2>
+              <p className="text-white/45 text-sm">{activeDay.value}</p>
+            </div>
 
-                <div className="text-white/60 text-sm">
-                  {item.time || item.airingAt || "Time N/A"}
-                </div>
-              </div>
-            ))}
+            <div className="text-xs font-bold uppercase tracking-[0.18em] text-white/40">
+              {schedule.length} Shows
+            </div>
           </div>
-        )}
+
+          {loading ? (
+            <div className="p-12 text-center text-white/50">
+              Loading schedule...
+            </div>
+          ) : schedule.length === 0 ? (
+            <div className="p-12 text-center">
+              <h3 className="text-2xl font-black mb-2">No schedule data</h3>
+              <p className="text-white/45">
+                Backend schedule is currently disabled to reduce AniList rate
+                limits.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-white/10">
+              {schedule.map((item, index) => {
+                const title = item.title || item.name || "Anime";
+                const episode = item.episode || item.nextEpisode || "N/A";
+                const time = item.time || item.airingAt || "Time N/A";
+
+                return (
+                  <Link
+                    key={item.id || index}
+                    to={item.id ? `/${item.slug || item.id}` : "/schedule"}
+                    className="flex items-center justify-between gap-4 p-5 hover:bg-white/[0.05] transition"
+                  >
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-lg line-clamp-1">
+                        {title}
+                      </h3>
+
+                      <p className="text-white/45 text-sm mt-1">
+                        Episode {episode}
+                      </p>
+                    </div>
+
+                    <div className="shrink-0 rounded-xl bg-white/10 px-4 py-2 text-sm text-white/70">
+                      {time}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
