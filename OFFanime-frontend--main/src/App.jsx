@@ -9,6 +9,7 @@ import { HomeInfoProvider } from "./context/HomeInfoContext";
 
 import Home from "./pages/Home/Home";
 import AnimeInfo from "./pages/animeInfo/AnimeInfo";
+import SchedulePage from "./pages/schedule/SchedulePage";
 import Navbar from "./components/navbar/Navbar";
 import Footer from "./components/footer/Footer";
 import Error from "./components/error/Error";
@@ -64,6 +65,8 @@ function App() {
               <Routes>
                 <Route path="/" element={<SplashScreen />} />
                 <Route path="/home" element={<Home />} />
+
+                <Route path="/schedule" element={<SchedulePage />} />
 
                 <Route
                   path="/recently-updated"
