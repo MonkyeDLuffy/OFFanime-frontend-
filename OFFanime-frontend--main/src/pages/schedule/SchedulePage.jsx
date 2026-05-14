@@ -60,19 +60,21 @@ export default function SchedulePage() {
   }, [activeDay.value]);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white pt-28 pb-16">
-      <div className="max-w-[1500px] mx-auto px-4">
-        <div className="mb-10">
-          <h1 className="text-5xl sm:text-7xl font-black tracking-tight">
+    <div className="min-h-screen bg-[#050505] text-white pt-24 pb-12">
+      <div className="max-w-[1450px] mx-auto px-4">
+        {/* HEADER */}
+        <div className="mb-7">
+          <h1 className="text-4xl sm:text-6xl font-black tracking-tight">
             Anime Schedule
           </h1>
 
-          <p className="text-white/45 mt-4 max-w-2xl text-lg">
+          <p className="text-white/40 mt-2 text-sm sm:text-base">
             Schedule page is separated from home to reduce AniList calls.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+        {/* DAY BUTTONS */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-7">
           {days.map((day) => {
             const active = activeDay.value === day.value;
 
@@ -80,17 +82,17 @@ export default function SchedulePage() {
               <button
                 key={day.value}
                 onClick={() => setActiveDay(day)}
-                className={`rounded-3xl px-6 py-6 border text-left transition-all duration-300 ${
+                className={`rounded-2xl px-5 py-5 border text-left transition-all duration-300 ${
                   active
                     ? "bg-white text-black border-white"
-                    : "bg-white/[0.04] text-white border-white/10 hover:bg-white/[0.08]"
+                    : "bg-white/[0.03] text-white border-white/10 hover:bg-white/[0.06]"
                 }`}
               >
                 <div className="font-black text-2xl">{day.label}</div>
 
                 <div
-                  className={`mt-2 text-sm ${
-                    active ? "text-black/60" : "text-white/45"
+                  className={`mt-1 text-sm ${
+                    active ? "text-black/60" : "text-white/40"
                   }`}
                 >
                   {day.dayName} • {day.shortDate}
@@ -100,20 +102,21 @@ export default function SchedulePage() {
           })}
         </div>
 
+        {/* CONTENT */}
         {loading ? (
-          <div className="text-center py-20 text-white/50">
+          <div className="text-center py-20 text-white/40">
             Loading schedule...
           </div>
         ) : schedule.length === 0 ? (
-          <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-14 text-center">
-            <h2 className="text-3xl font-black">No schedule data</h2>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-12 text-center">
+            <h2 className="text-2xl font-black">No schedule data</h2>
 
-            <p className="text-white/45 mt-3">
-              Backend schedule is currently unavailable.
+            <p className="text-white/40 mt-2">
+              Backend schedule unavailable.
             </p>
           </div>
         ) : (
-          <div className="space-y-5">
+          <div className="space-y-3">
             {schedule.map((item, index) => {
               const title = item.title || item.name || "Anime";
 
@@ -127,51 +130,51 @@ export default function SchedulePage() {
                 <Link
                   key={item.id || index}
                   to={`/${item.anilistId || item.id}`}
-                  className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] h-[160px] flex items-center"
+                  className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] h-[110px] flex items-center"
                 >
                   {/* Banner */}
                   <img
                     src={image}
                     alt={title}
-                    className="absolute inset-0 w-full h-full object-cover opacity-35 group-hover:scale-105 transition duration-500"
+                    className="absolute inset-0 w-full h-full object-cover opacity-25 group-hover:scale-105 transition duration-500"
                   />
 
-                  {/* Dark overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-black/40" />
+                  {/* Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-black/50" />
 
                   {/* Poster */}
-                  <div className="relative z-10 pl-6">
+                  <div className="relative z-10 pl-4">
                     <img
                       src={item.poster || item.image}
                       alt={title}
-                      className="w-[95px] h-[125px] object-cover rounded-2xl border border-white/10 shadow-2xl"
+                      className="w-[64px] h-[84px] object-cover rounded-xl border border-white/10"
                     />
                   </div>
 
-                  {/* Info */}
-                  <div className="relative z-10 flex-1 px-6 min-w-0">
-                    <h2 className="text-2xl font-black line-clamp-2 max-w-[700px]">
+                  {/* INFO */}
+                  <div className="relative z-10 flex-1 px-4 min-w-0">
+                    <h2 className="text-lg sm:text-2xl font-black line-clamp-1">
                       {title}
                     </h2>
 
-                    <div className="flex items-center gap-3 mt-3 flex-wrap">
-                      <div className="px-3 py-1 rounded-full bg-white/10 text-sm text-white/80">
+                    <div className="flex items-center gap-2 mt-2 flex-wrap">
+                      <div className="px-3 py-1 rounded-full bg-white/10 text-xs text-white/80">
                         Episode {item.episode || "?"}
                       </div>
 
-                      <div className="px-3 py-1 rounded-full bg-white/10 text-sm text-white/80">
+                      <div className="px-3 py-1 rounded-full bg-white/10 text-xs text-white/80">
                         {item.type || "TV"}
                       </div>
 
-                      <div className="px-3 py-1 rounded-full bg-white/10 text-sm text-white/80">
-                        {item.time || "Time N/A"}
+                      <div className="px-3 py-1 rounded-full bg-white/10 text-xs text-white/80 md:hidden">
+                        {item.time || "N/A"}
                       </div>
                     </div>
                   </div>
 
-                  {/* Time */}
-                  <div className="relative z-10 pr-6 hidden md:block">
-                    <div className="rounded-2xl bg-black/50 backdrop-blur-md border border-white/10 px-5 py-3 text-lg font-bold">
+                  {/* TIME */}
+                  <div className="relative z-10 pr-4 hidden md:block">
+                    <div className="rounded-xl bg-black/60 backdrop-blur-md border border-white/10 px-4 py-2 text-sm font-bold">
                       {item.time || "N/A"}
                     </div>
                   </div>
