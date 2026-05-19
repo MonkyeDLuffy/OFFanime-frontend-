@@ -5,10 +5,32 @@ export default async function getEpisodes(id) {
 
   try {
     const response = await axios.get(`${api_url}/episodes/${id}`, {
-      timeout: 30000,
+      timeout: 120000,
+      params: {
+        refresh: true,
+      },
     });
 
-    return response.data?.results || [];
+    const episodes = response.data?.results || [];
+
+    return episodes
+      .map((ep, index) => {
+        const epNumber =
+          Number(ep.number) ||
+          Number(ep.episodeNumber) ||
+          Number(ep.episodeId) ||
+          index + 1;
+
+        return {
+          ...ep,
+          id: ep.id || epNumber,
+          number: epNumber,
+          episodeId: epNumber,
+          episodeNumber: epNumber,
+          title: ep.title || `Episode ${epNumber}`,
+        };
+      })
+      .sort((a, b) => Number(a.number) - Number(b.number));
   } catch (error) {
     console.error("Error fetching episodes:", error);
     return [];
