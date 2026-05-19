@@ -17,6 +17,7 @@ import getStreamInfo from "@/src/utils/getStreamInfo.utils";
 import { createAnimeSlug, getAnimeIdFromSlug } from "@/src/utils/slug.utils";
 
 const ANIMEPAHE_API = "https://anime-streaming-system-1.onrender.com";
+const EPISODES_PER_RANGE = 100;
 
 export default function Watch() {
   const { id: animeSlug } = useParams();
@@ -67,6 +68,59 @@ export default function Watch() {
     ? createAnimeSlug(title, anime.id || animeId)
     : animeSlug;
 
+  const getEpisodeNumber = (ep) => {
+    const n =
+      ep?.number ||
+      ep?.episodeNumber ||
+      ep?.episode_no ||
+      ep?.episode ||
+      ep?.ep ||
+      "1";
+
+    return Number(String(n).replace(/\D/g, "")) || 1;
+  };
+
+  const sortedEpisodes = useMemo(() => {
+    return [...episodes].sort((a, b) => getEpisodeNumber(a) - getEpisodeNumber(b));
+  }, [episodes]);
+
+  const ranges = useMemo(() => {
+    if (!sortedEpisodes.length) return [];
+
+    const maxEp = Math.max(...sortedEpisodes.map(getEpisodeNumber));
+    const totalRanges = Math.ceil(maxEp / EPISODES_PER_RANGE);
+
+    return Array.from({ length: totalRanges }, (_, index) => {
+      const start = index * EPISODES_PER_RANGE + 1;
+      const end = Math.min((index + 1) * EPISODES_PER_RANGE, maxEp);
+
+      return { start, end };
+    });
+  }, [sortedEpisodes]);
+
+  const visibleEpisodes = useMemo(() => {
+    const range = ranges[episodeRange];
+    if (!range) return sortedEpisodes;
+
+    return sortedEpisodes.filter((ep) => {
+      const epNumber = getEpisodeNumber(ep);
+      return epNumber >= range.start && epNumber <= range.end;
+    });
+  }, [sortedEpisodes, ranges, episodeRange]);
+
+  useEffect(() => {
+    if (!ranges.length || !episode) return;
+
+    const epNum = Number(episode);
+    const correctRangeIndex = ranges.findIndex(
+      (range) => epNum >= range.start && epNum <= range.end
+    );
+
+    if (correctRangeIndex !== -1 && correctRangeIndex !== episodeRange) {
+      setEpisodeRange(correctRangeIndex);
+    }
+  }, [episode, ranges]);
+
   useEffect(() => {
     if (!anime || !episode) return;
 
@@ -103,6 +157,8 @@ export default function Watch() {
   useEffect(() => {
     if (!query.get("ep")) {
       navigate(`/watch/${animeSlug}?ep=1`, { replace: true });
+    } else {
+      setEpisode(query.get("ep"));
     }
   }, [animeSlug, location.search, navigate]);
 
@@ -130,7 +186,7 @@ export default function Watch() {
 
         const cleanEpisodes = Array.isArray(episodeRes)
           ? episodeRes
-          : episodeRes?.results || [];
+          : episodeRes?.results || episodeRes?.episodes || [];
 
         setAnime(cleanAnime);
         setEpisodes(Array.isArray(cleanEpisodes) ? cleanEpisodes : []);
@@ -162,7 +218,11 @@ export default function Watch() {
           },
         ];
 
-        setServers(Array.isArray(serverRes) && serverRes.length ? serverRes : fallbackServers);
+        setServers(
+          Array.isArray(serverRes) && serverRes.length
+            ? serverRes
+            : fallbackServers
+        );
       } catch (err) {
         console.error("Watch page load error:", err);
         setAnime(null);
@@ -336,30 +396,7 @@ export default function Watch() {
     setReloadKey((prev) => prev + 1);
   };
 
-  const getEpisodeNumber = (ep) =>
-    ep?.number || ep?.episodeId || ep?.episode_no || ep?.episode || "1";
-
-  const ranges = useMemo(() => {
-    const total = episodes.length;
-    const arr = [];
-
-    for (let i = 0; i < total; i += 100) {
-      arr.push({
-        start: i + 1,
-        end: Math.min(i + 100, total),
-      });
-    }
-
-    return arr;
-  }, [episodes]);
-
-  const visibleEpisodes = useMemo(() => {
-    const range = ranges[episodeRange];
-    if (!range) return episodes;
-    return episodes.slice(range.start - 1, range.end);
-  }, [episodes, ranges, episodeRange]);
-
-  const currentIndex = episodes.findIndex(
+  const currentIndex = sortedEpisodes.findIndex(
     (ep) => String(getEpisodeNumber(ep)) === String(episode)
   );
 
@@ -370,6 +407,14 @@ export default function Watch() {
     setReloadKey((prev) => prev + 1);
     setStream(null);
     setIframeLoaded(false);
+
+    const correctRangeIndex = ranges.findIndex(
+      (range) => Number(epNumber) >= range.start && Number(epNumber) <= range.end
+    );
+
+    if (correctRangeIndex !== -1) {
+      setEpisodeRange(correctRangeIndex);
+    }
 
     navigate(`/watch/${correctSlug}?ep=${epNumber}`, { replace: true });
 
@@ -385,12 +430,12 @@ export default function Watch() {
   };
 
   const goPrev = () => {
-    if (currentIndex > 0) goToEpisode(episodes[currentIndex - 1]);
+    if (currentIndex > 0) goToEpisode(sortedEpisodes[currentIndex - 1]);
   };
 
   const goNext = () => {
-    if (currentIndex >= 0 && episodes[currentIndex + 1]) {
-      goToEpisode(episodes[currentIndex + 1]);
+    if (currentIndex >= 0 && sortedEpisodes[currentIndex + 1]) {
+      goToEpisode(sortedEpisodes[currentIndex + 1]);
     }
   };
 
@@ -398,7 +443,8 @@ export default function Watch() {
     if (stream?.provider !== "animepahe") return [];
 
     const audio = selectedServer.type === "dub";
-    const allStreams = stream?.raw?.streams?.all || stream?.raw?.selected?.streams || [];
+    const allStreams =
+      stream?.raw?.streams?.all || stream?.raw?.selected?.streams || [];
 
     const filtered = allStreams.filter((item) => {
       const isDub = item?.original?.isDub === true;
@@ -406,6 +452,7 @@ export default function Watch() {
     });
 
     const qualityOrder = ["360p", "720p", "1080p"];
+
     return qualityOrder
       .map((quality) => {
         const found = filtered.find((x) => x.quality === quality);
@@ -487,9 +534,8 @@ export default function Watch() {
                     </h2>
 
                     <p className="text-gray-400 text-sm sm:text-lg leading-relaxed mb-6 sm:mb-10 max-w-[440px] mx-auto">
-                      To keep our servers running and provide high-quality
-                      streams, please click the button below to support us. It
-                      takes only 3 seconds!
+                      To keep our servers running and provide high-quality streams,
+                      please click the button below to support us. It takes only 3 seconds!
                     </p>
 
                     <button
@@ -564,14 +610,16 @@ export default function Watch() {
                 <div className="flex gap-2">
                   <button
                     onClick={goPrev}
-                    className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15"
+                    disabled={currentIndex <= 0}
+                    className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/15 disabled:opacity-40"
                   >
                     Prev
                   </button>
 
                   <button
                     onClick={goNext}
-                    className="px-4 py-2 rounded-lg bg-white text-black font-semibold hover:bg-white/90"
+                    disabled={!sortedEpisodes[currentIndex + 1]}
+                    className="px-4 py-2 rounded-lg bg-white text-black font-semibold hover:bg-white/90 disabled:opacity-40"
                   >
                     Next
                   </button>
@@ -671,7 +719,7 @@ export default function Watch() {
                 <div>
                   <h2 className="text-xl font-bold">Episodes</h2>
                   <p className="text-sm text-gray-400">
-                    {episodes.length} episodes
+                    {sortedEpisodes.length} episodes
                   </p>
                 </div>
 
@@ -679,7 +727,7 @@ export default function Watch() {
                   <select
                     value={episodeRange}
                     onChange={(e) => setEpisodeRange(Number(e.target.value))}
-                    className="bg-[#1b1b1b] border border-white/10 rounded-xl px-3 py-2 text-sm"
+                    className="bg-[#1b1b1b] border border-white/10 rounded-xl px-3 py-2 text-sm outline-none"
                   >
                     {ranges.map((range, index) => (
                       <option key={index} value={index}>
@@ -700,7 +748,7 @@ export default function Watch() {
 
                   return (
                     <button
-                      key={ep.id || epNumber}
+                      key={ep.id || ep.episodeId || epNumber}
                       onClick={() => goToEpisode(ep)}
                       className={`h-12 rounded-xl border font-semibold transition ${
                         String(epNumber) === String(episode)
