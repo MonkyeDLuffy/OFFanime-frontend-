@@ -1,6 +1,6 @@
+import { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay, Pagination, EffectFade } from "swiper/modules";
-import { useEffect, useState } from "react";
 
 import "swiper/css";
 import "swiper/css/autoplay";
@@ -33,8 +33,8 @@ const Spotlight = ({ spotlights = [] }) => {
             if (json?.data?.logo) {
               logos[anime.id] = json.data.logo;
             }
-          } catch (err) {
-            console.log("Spotlight TMDB logo error:", err);
+          } catch {
+            // ignore logo errors
           }
         })
       );
@@ -55,9 +55,9 @@ const Spotlight = ({ spotlights = [] }) => {
         <Swiper
           spaceBetween={0}
           slidesPerView={1}
-          loop={true}
-          allowTouchMove={true}
-          grabCursor={true}
+          loop
+          allowTouchMove
+          grabCursor
           effect="fade"
           fadeEffect={{ crossFade: true }}
           speed={1200}
@@ -80,18 +80,11 @@ const Spotlight = ({ spotlights = [] }) => {
 
           {spotlights.map((item, index) => (
             <SwiperSlide className="relative h-full" key={item.id || index}>
-              <div className="relative h-full w-full">
-                <Banner item={item} index={index} />
-
-                {tmdbLogos[item.id] && (
-                  <img
-                    src={tmdbLogos[item.id]}
-                    alt={item.title}
-                    className="absolute left-[55px] top-[250px] z-[40] max-w-[460px] max-h-[160px] object-contain drop-shadow-[0_0_35px_rgba(0,0,0,1)] max-md:left-5 max-md:top-[150px] max-md:max-w-[260px]"
-                    loading="lazy"
-                  />
-                )}
-              </div>
+              <Banner
+                item={item}
+                index={index}
+                tmdbLogo={tmdbLogos[item.id]}
+              />
             </SwiperSlide>
           ))}
         </Swiper>
