@@ -727,12 +727,14 @@ export default function Watch() {
                 {ranges.length >= 1 && (
   <div className="relative">
     <button
+      type="button"
       onClick={() => setRangeOpen((prev) => !prev)}
       className="min-w-[120px] flex items-center justify-between gap-3 bg-[#1b1b1b] border border-white/10 hover:border-white/25 hover:bg-white/10 rounded-xl px-4 py-2 text-sm font-semibold text-white transition"
     >
       <span>
         {ranges[episodeRange]?.start}-{ranges[episodeRange]?.end}
       </span>
+
       <span className={`transition ${rangeOpen ? "rotate-180" : ""}`}>
         ▼
       </span>
@@ -746,6 +748,7 @@ export default function Watch() {
           return (
             <button
               key={index}
+              type="button"
               onClick={() => {
                 setEpisodeRange(index);
                 setRangeOpen(false);
