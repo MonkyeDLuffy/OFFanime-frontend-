@@ -32,6 +32,7 @@ export default function Watch() {
 
   const [anime, setAnime] = useState(null);
   const [episodes, setEpisodes] = useState([]);
+  const [episodesLoading, setEpisodesLoading] = useState(true);
   const [episode, setEpisode] = useState(initialEp);
   const [servers, setServers] = useState([]);
 
@@ -50,12 +51,12 @@ export default function Watch() {
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [episodeRange, setEpisodeRange] = useState(0);
+  const [rangeOpen, setRangeOpen] = useState(false);
 
   const [showSupportLayer, setShowSupportLayer] = useState(false);
   const [supportCountdown, setSupportCountdown] = useState(3);
   const [supportClicked, setSupportClicked] = useState(false);
   const [allowPlayer, setAllowPlayer] = useState(false);
-  const [rangeOpen, setRangeOpen] = useState(false);
 
   const title =
     anime?.title ||
@@ -110,18 +111,18 @@ export default function Watch() {
     });
   }, [sortedEpisodes, ranges, episodeRange]);
 
-useEffect(() => {
-  if (!ranges.length || !episode) return;
+  useEffect(() => {
+    if (!ranges.length || !episode) return;
 
-  const epNum = Number(episode);
-  const correctRangeIndex = ranges.findIndex(
-    (range) => epNum >= range.start && epNum <= range.end
-  );
+    const epNum = Number(episode);
+    const correctRangeIndex = ranges.findIndex(
+      (range) => epNum >= range.start && epNum <= range.end
+    );
 
-  if (correctRangeIndex !== -1) {
-    setEpisodeRange(correctRangeIndex);
-  }
-}, [episode, ranges]);
+    if (correctRangeIndex !== -1) {
+      setEpisodeRange(correctRangeIndex);
+    }
+  }, [episode, ranges]);
 
   useEffect(() => {
     if (!anime || !episode) return;
@@ -169,11 +170,12 @@ useEffect(() => {
 
     async function loadPage() {
       setLoading(true);
+      setEpisodes([]);
+      setEpisodesLoading(true);
 
       try {
-        const [animeRes, episodeRes, serverRes] = await Promise.all([
+        const [animeRes, serverRes] = await Promise.all([
           fetchAnimeInfo(animeId),
-          getEpisodes(animeId),
           getServers(),
         ]);
 
@@ -186,18 +188,33 @@ useEffect(() => {
           animeRes ||
           null;
 
-        const cleanEpisodes = Array.isArray(episodeRes)
-          ? episodeRes
-          : episodeRes?.results || episodeRes?.episodes || [];
-
         setAnime(cleanAnime);
-        setEpisodes(Array.isArray(cleanEpisodes) ? cleanEpisodes : []);
 
         const fallbackServers = [
-          { id: "megaplay-sub", name: "MegaPlay", provider: "megaplay", type: "sub" },
-          { id: "megaplay-dub", name: "MegaPlay", provider: "megaplay", type: "dub" },
-          { id: "animepahe-sub", name: "AnimePahe", provider: "animepahe", type: "sub" },
-          { id: "animepahe-dub", name: "AnimePahe", provider: "animepahe", type: "dub" },
+          {
+            id: "megaplay-sub",
+            name: "MegaPlay",
+            provider: "megaplay",
+            type: "sub",
+          },
+          {
+            id: "megaplay-dub",
+            name: "MegaPlay",
+            provider: "megaplay",
+            type: "dub",
+          },
+          {
+            id: "animepahe-sub",
+            name: "AnimePahe",
+            provider: "animepahe",
+            type: "sub",
+          },
+          {
+            id: "animepahe-dub",
+            name: "AnimePahe",
+            provider: "animepahe",
+            type: "dub",
+          },
         ];
 
         setServers(
@@ -205,19 +222,63 @@ useEffect(() => {
             ? serverRes
             : fallbackServers
         );
+
+        setLoading(false);
+
+        getEpisodes(animeId)
+          .then((episodeRes) => {
+            if (!alive) return;
+
+            const cleanEpisodes = Array.isArray(episodeRes)
+              ? episodeRes
+              : episodeRes?.results || episodeRes?.episodes || [];
+
+            setEpisodes(Array.isArray(cleanEpisodes) ? cleanEpisodes : []);
+          })
+          .catch((err) => {
+            console.error("Episodes load error:", err);
+            if (alive) setEpisodes([]);
+          })
+          .finally(() => {
+            if (alive) setEpisodesLoading(false);
+          });
       } catch (err) {
         console.error("Watch page load error:", err);
+
+        if (!alive) return;
+
         setAnime(null);
         setEpisodes([]);
+        setEpisodesLoading(false);
 
         setServers([
-          { id: "megaplay-sub", name: "MegaPlay", provider: "megaplay", type: "sub" },
-          { id: "megaplay-dub", name: "MegaPlay", provider: "megaplay", type: "dub" },
-          { id: "animepahe-sub", name: "AnimePahe", provider: "animepahe", type: "sub" },
-          { id: "animepahe-dub", name: "AnimePahe", provider: "animepahe", type: "dub" },
+          {
+            id: "megaplay-sub",
+            name: "MegaPlay",
+            provider: "megaplay",
+            type: "sub",
+          },
+          {
+            id: "megaplay-dub",
+            name: "MegaPlay",
+            provider: "megaplay",
+            type: "dub",
+          },
+          {
+            id: "animepahe-sub",
+            name: "AnimePahe",
+            provider: "animepahe",
+            type: "sub",
+          },
+          {
+            id: "animepahe-dub",
+            name: "AnimePahe",
+            provider: "animepahe",
+            type: "dub",
+          },
         ]);
-      } finally {
-        if (alive) setLoading(false);
+
+        setLoading(false);
       }
     }
 
@@ -446,12 +507,16 @@ useEffect(() => {
   const iframeUrl = useMemo(() => {
     if (stream?.provider === "animepahe") {
       const embed = selectedAnimePaheSource?.embed;
+
       if (!embed) return "";
+
       return `${embed}${embed.includes("?") ? "&" : "?"}reload=${reloadKey}`;
     }
 
     const normalUrl = stream?.url || stream?.embed || "";
+
     if (!normalUrl) return "";
+
     return `${normalUrl}${normalUrl.includes("?") ? "&" : "?"}reload=${reloadKey}`;
   }, [stream, selectedAnimePaheSource, reloadKey]);
 
@@ -492,8 +557,9 @@ useEffect(() => {
                     </h2>
 
                     <p className="text-gray-400 text-sm sm:text-lg leading-relaxed mb-6 sm:mb-10 max-w-[440px] mx-auto">
-                      To keep our servers running and provide high-quality streams,
-                      please click the button below to support us. It takes only 3 seconds!
+                      To keep our servers running and provide high-quality
+                      streams, please click the button below to support us. It
+                      takes only 3 seconds!
                     </p>
 
                     <button
@@ -677,7 +743,9 @@ useEffect(() => {
                 <div>
                   <h2 className="text-xl font-bold">Episodes</h2>
                   <p className="text-sm text-gray-400">
-                    {sortedEpisodes.length} episodes
+                    {episodesLoading
+                      ? "Loading episodes..."
+                      : `${sortedEpisodes.length} episodes`}
                   </p>
                 </div>
 
@@ -728,7 +796,9 @@ useEffect(() => {
             </div>
 
             <div className="max-h-[720px] overflow-y-auto p-4 grid grid-cols-3 gap-2">
-              {visibleEpisodes.length === 0 ? (
+              {episodesLoading ? (
+                <p className="text-gray-400 col-span-3">Loading episodes...</p>
+              ) : visibleEpisodes.length === 0 ? (
                 <p className="text-gray-400 col-span-3">No episodes found.</p>
               ) : (
                 visibleEpisodes.map((ep) => {
