@@ -1,134 +1,77 @@
-import { Swiper, SwiperSlide } from "swiper/react";
+import { Link } from "react-router-dom";
 
-import {
-  Navigation,
-  Autoplay,
-  Pagination,
-  EffectFade,
-} from "swiper/modules";
-
-import { useEffect, useState } from "react";
-
-import "swiper/css";
-import "swiper/css/autoplay";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-import "swiper/css/effect-fade";
-
-import "./Spotlight.css";
-import Banner from "../banner/Banner";
-
-const Spotlight = ({ spotlights = [] }) => {
-  const [tmdbLogos, setTmdbLogos] = useState({});
-
-  useEffect(() => {
-    const fetchLogos = async () => {
-      try {
-        const results = {};
-
-        await Promise.all(
-          spotlights.slice(0, 10).map(async (anime) => {
-            try {
-              const res = await fetch(
-                `https://anime-details-api.onrender.com/api/tmdb/${anime.id}`
-              );
-
-              const data = await res.json();
-
-              if (data?.data?.logo) {
-                results[anime.id] = data.data.logo;
-              }
-            } catch (err) {
-              console.log("TMDB spotlight logo error:", err);
-            }
-          })
-        );
-
-        setTmdbLogos(results);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
-    if (spotlights.length > 0) {
-      fetchLogos();
-    }
-  }, [spotlights]);
-
+const Banner = ({ item, tmdbLogo }) => {
   return (
-    <section className="relative w-screen h-[660px] max-[1400px]:h-[610px] max-[1024px]:h-[540px] max-md:h-[460px] -mt-16 left-1/2 -translate-x-1/2 overflow-hidden">
-      {spotlights.length > 0 ? (
-        <Swiper
-          spaceBetween={0}
-          slidesPerView={1}
-          loop={true}
-          allowTouchMove={true}
-          grabCursor={true}
-          effect="fade"
-          fadeEffect={{
-            crossFade: true,
-          }}
-          speed={1200}
-          navigation={{
-            nextEl: ".spotlight-next",
-            prevEl: ".spotlight-prev",
-          }}
-          pagination={{
-            clickable: true,
-          }}
-          autoplay={{
-            delay: 6500,
-            disableOnInteraction: false,
-          }}
-          modules={[
-            Navigation,
-            Autoplay,
-            Pagination,
-            EffectFade,
-          ]}
-          className="spotlight-swiper h-full w-full overflow-hidden relative"
-        >
-          {/* BUTTONS */}
-          <div className="absolute right-[38px] top-[145px] flex items-center gap-3 z-[30] max-md:hidden">
-            <button className="spotlight-prev">
-              ‹
-            </button>
+    <div className="relative w-full h-full overflow-hidden">
+      {/* BACKGROUND */}
+      <div className="absolute inset-0">
+        <img
+          src={
+            item?.banner ||
+            item?.cover ||
+            item?.image
+          }
+          alt={item?.title}
+          className="w-full h-full object-cover scale-105"
+        />
 
-            <button className="spotlight-next">
-              ›
-            </button>
+        {/* OVERLAY */}
+        <div className="absolute inset-0 bg-black/60" />
+
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/70 to-transparent" />
+
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-black/30" />
+      </div>
+
+      {/* CONTENT */}
+      <div className="relative z-10 h-full flex items-center px-[55px] max-md:px-5">
+        <div className="max-w-[850px] pt-16">
+          {/* SPOTLIGHT TEXT */}
+          <div className="text-[#ffbade] text-[22px] font-semibold mb-4">
+            #{item?.rank || 1} Spotlight
           </div>
 
-          {spotlights.map((item, index) => (
-            <SwiperSlide
-              className="relative h-full"
-              key={item.id || index}
-            >
-              <div className="relative w-full h-full">
-                <Banner item={item} index={index} />
+          {/* TMDB LOGO */}
+          {tmdbLogo ? (
+            <img
+              src={tmdbLogo}
+              alt={item?.title}
+              className="max-w-[480px] max-h-[220px] object-contain mb-6 drop-shadow-[0_0_30px_rgba(0,0,0,0.95)] max-md:max-w-[260px]"
+              loading="lazy"
+            />
+          ) : (
+            <h1 className="text-white text-7xl font-black leading-[1.05] mb-6 max-w-[850px] max-md:text-5xl">
+              {item?.title}
+            </h1>
+          )}
 
-                {/* TMDB LOGO */}
-                {tmdbLogos[item.id] && (
-                  <div className="absolute left-[55px] top-[180px] z-[20] max-md:left-5 max-md:top-[120px]">
-                    <img
-                      src={tmdbLogos[item.id]}
-                      alt={item.title}
-                      className="max-w-[420px] max-h-[180px] object-contain drop-shadow-[0_0_25px_rgba(0,0,0,0.9)] max-md:max-w-[250px]"
-                      loading="lazy"
-                    />
-                  </div>
-                )}
-              </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      ) : (
-        <div className="h-full flex items-center justify-center text-white">
-          No spotlights to show.
+          {/* DESCRIPTION */}
+          <p className="text-[#d7d7d7] text-[18px] leading-[1.8] max-w-[760px] line-clamp-3 mb-10 max-md:text-[15px]">
+            {item?.description ||
+              item?.overview ||
+              "No description available."}
+          </p>
+
+          {/* BUTTONS */}
+          <div className="flex items-center gap-5">
+            <Link
+              to={`/watch/${item?.id}?ep=1`}
+              className="h-[64px] px-10 rounded-2xl bg-white text-black font-bold text-[20px] flex items-center justify-center hover:scale-105 duration-300"
+            >
+              ▶ Watch Now
+            </Link>
+
+            <Link
+              to={`/${item?.id}`}
+              className="h-[64px] px-10 rounded-2xl border border-white/20 bg-white/10 backdrop-blur-xl text-white font-bold text-[20px] flex items-center justify-center hover:bg-white/20 duration-300"
+            >
+              Details
+            </Link>
+          </div>
         </div>
-      )}
-    </section>
+      </div>
+    </div>
   );
 };
 
-export default Spotlight;
+export default Banner;
