@@ -7,6 +7,8 @@ import {
   EffectFade,
 } from "swiper/modules";
 
+import { useEffect, useState } from "react";
+
 import "swiper/css";
 import "swiper/css/autoplay";
 import "swiper/css/navigation";
@@ -17,6 +19,42 @@ import "./Spotlight.css";
 import Banner from "../banner/Banner";
 
 const Spotlight = ({ spotlights = [] }) => {
+  const [tmdbLogos, setTmdbLogos] = useState({});
+
+  useEffect(() => {
+    const fetchLogos = async () => {
+      try {
+        const results = {};
+
+        await Promise.all(
+          spotlights.slice(0, 10).map(async (anime) => {
+            try {
+              const res = await fetch(
+                `https://anime-details-api.onrender.com/api/tmdb/${anime.id}`
+              );
+
+              const data = await res.json();
+
+              if (data?.data?.logo) {
+                results[anime.id] = data.data.logo;
+              }
+            } catch (err) {
+              console.log("TMDB spotlight logo error:", err);
+            }
+          })
+        );
+
+        setTmdbLogos(results);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    if (spotlights.length > 0) {
+      fetchLogos();
+    }
+  }, [spotlights]);
+
   return (
     <section className="relative w-screen h-[660px] max-[1400px]:h-[610px] max-[1024px]:h-[540px] max-md:h-[460px] -mt-16 left-1/2 -translate-x-1/2 overflow-hidden">
       {spotlights.length > 0 ? (
@@ -66,7 +104,21 @@ const Spotlight = ({ spotlights = [] }) => {
               className="relative h-full"
               key={item.id || index}
             >
-              <Banner item={item} index={index} />
+              <div className="relative w-full h-full">
+                <Banner item={item} index={index} />
+
+                {/* TMDB LOGO */}
+                {tmdbLogos[item.id] && (
+                  <div className="absolute left-[55px] top-[180px] z-[20] max-md:left-5 max-md:top-[120px]">
+                    <img
+                      src={tmdbLogos[item.id]}
+                      alt={item.title}
+                      className="max-w-[420px] max-h-[180px] object-contain drop-shadow-[0_0_25px_rgba(0,0,0,0.9)] max-md:max-w-[250px]"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+              </div>
             </SwiperSlide>
           ))}
         </Swiper>
