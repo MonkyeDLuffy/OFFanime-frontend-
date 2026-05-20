@@ -4,13 +4,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { createAnimeSlug } from "@/src/utils/slug.utils";
 
-export default function Hero({ anime, jikanInfo }) {
+export default function Hero({ anime, jikanInfo, tmdbInfo }) {
   const [expanded, setExpanded] = useState(false);
   const [trailerOpen, setTrailerOpen] = useState(false);
 
   const title =
     jikanInfo?.titleEnglish ||
     jikanInfo?.title ||
+    tmdbInfo?.title ||
     anime?.title ||
     anime?.name ||
     anime?.animeTitle ||
@@ -20,6 +21,7 @@ export default function Hero({ anime, jikanInfo }) {
   const slug = createAnimeSlug(title, animeId);
 
   const poster =
+    tmdbInfo?.poster ||
     anime?.poster ||
     anime?.image ||
     jikanInfo?.poster ||
@@ -27,6 +29,7 @@ export default function Hero({ anime, jikanInfo }) {
     "";
 
   const banner =
+    tmdbInfo?.backdrop ||
     anime?.bannerImage ||
     anime?.banner ||
     anime?.coverImage?.extraLarge ||
@@ -35,8 +38,11 @@ export default function Hero({ anime, jikanInfo }) {
     anime?.image ||
     poster;
 
+  const logo = tmdbInfo?.logo || null;
+
   const description =
     jikanInfo?.synopsis ||
+    tmdbInfo?.overview ||
     anime?.description ||
     anime?.animeDesc ||
     "No description available.";
@@ -72,7 +78,7 @@ export default function Hero({ anime, jikanInfo }) {
             />
           )}
 
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/50 to-black/15" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/55 to-black/20" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/25 to-[#050505]" />
           <div className="absolute inset-x-0 bottom-0 h-[280px] bg-gradient-to-t from-[#050505] via-[#050505]/85 to-transparent" />
         </div>
@@ -81,22 +87,36 @@ export default function Hero({ anime, jikanInfo }) {
           <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-7 items-start">
             <div className="relative">
               <div className="relative w-[190px] md:w-[220px] h-[350px] md:h-[470px] rounded-[18px] overflow-hidden border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.85)] bg-black">
-                <img
-                  src={poster}
-                  alt={title}
-                  className="w-full h-full object-cover object-center scale-[1.015]"
-                  loading="eager"
-                  fetchPriority="high"
-                />
+                {poster && (
+                  <img
+                    src={poster}
+                    alt={title}
+                    className="w-full h-full object-cover object-center scale-[1.015]"
+                    loading="eager"
+                    fetchPriority="high"
+                  />
+                )}
 
                 <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
               </div>
             </div>
 
             <div className="max-w-[950px] pt-4">
-              <h1 className="text-4xl md:text-5xl lg:text-[64px] font-black leading-[0.98] tracking-tight text-white drop-shadow-[0_5px_30px_rgba(0,0,0,0.9)] max-w-[900px]">
-                {title}
-              </h1>
+              {logo ? (
+                <img
+                  src={logo}
+                  alt={title}
+                  className="max-w-[420px] max-h-[150px] object-contain object-left drop-shadow-[0_8px_35px_rgba(0,0,0,0.95)] mb-5"
+                  loading="eager"
+                  fetchPriority="high"
+                />
+              ) : (
+                <h1 className="text-4xl md:text-5xl lg:text-[64px] font-black leading-[0.98] tracking-tight text-white drop-shadow-[0_5px_30px_rgba(0,0,0,0.9)] max-w-[900px]">
+                  {title}
+                </h1>
+              )}
+
+              <p className="text-gray-400 text-base mb-4">{title}</p>
 
               <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-[13px] text-gray-300">
                 {type && <span>{type}</span>}
