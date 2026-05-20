@@ -6,6 +6,7 @@ import getEpisodes from "@/src/utils/getEpisodes.utils";
 import getRecommendations from "@/src/utils/getRecommendations.utils";
 import getSeasons from "@/src/utils/getSeasons.utils";
 import getJikanInfo from "@/src/utils/getJikanInfo.utils";
+import getTmdbInfo from "@/src/utils/getTmdbInfo.utils";
 
 import {
   createAnimeSlug,
@@ -27,16 +28,13 @@ export default function AnimeInfo() {
   const { id: routeId } = useParams();
   const navigate = useNavigate();
 
-  const id = useMemo(
-    () => getAnimeIdFromSlug(routeId),
-    [routeId]
-  );
+  const id = useMemo(() => getAnimeIdFromSlug(routeId), [routeId]);
 
   const [anime, setAnime] = useState(null);
   const [jikanInfo, setJikanInfo] = useState(null);
+  const [tmdbInfo, setTmdbInfo] = useState(null);
 
   const [loading, setLoading] = useState(true);
-
   const [activeTab, setActiveTab] = useState("episodes");
   const [tabLoading, setTabLoading] = useState(false);
 
@@ -65,7 +63,7 @@ export default function AnimeInfo() {
 
         setAnime(null);
         setJikanInfo(null);
-
+        setTmdbInfo(null);
         setEpisodes([]);
         setSeasons([]);
         setRecommendations([]);
@@ -78,7 +76,6 @@ export default function AnimeInfo() {
 
         setActiveTab("episodes");
 
-        // MAIN ANIME INFO
         const animeRes = await getAnimeInfo(id);
 
         if (!alive) return;
@@ -92,27 +89,31 @@ export default function AnimeInfo() {
 
         setAnime(animeData);
 
-        // JIKAN INFO
-        try {
-          const jikan = await getJikanInfo(id);
+        getJikanInfo(id)
+          .then((jikan) => {
+            if (alive && jikan) setJikanInfo(jikan);
+          })
+          .catch((err) => {
+            console.log("Failed to load Jikan:", err.message);
+          });
 
-          if (alive && jikan) {
-            setJikanInfo(jikan);
-          }
-        } catch (err) {
-          console.log("Failed to load Jikan:", err.message);
-        }
+        getTmdbInfo(id)
+          .then((tmdb) => {
+            if (alive && tmdb) setTmdbInfo(tmdb);
+          })
+          .catch((err) => {
+            console.log("Failed to load TMDB:", err.message);
+          });
       } catch (error) {
         console.error("AnimeInfo main load error:", error);
 
         if (alive) {
           setAnime(null);
           setJikanInfo(null);
+          setTmdbInfo(null);
         }
       } finally {
-        if (alive) {
-          setLoading(false);
-        }
+        if (alive) setLoading(false);
       }
     }
 
@@ -123,7 +124,6 @@ export default function AnimeInfo() {
     };
   }, [id]);
 
-  // FIX URL SLUG
   useEffect(() => {
     if (!anime || !id || !routeId) return;
 
@@ -135,18 +135,16 @@ export default function AnimeInfo() {
       anime.romajiTitle ||
       jikanInfo?.titleEnglish ||
       jikanInfo?.title ||
+      tmdbInfo?.title ||
       "anime";
 
     const correctSlug = createAnimeSlug(title, id);
 
     if (routeId !== correctSlug) {
-      navigate(`/${correctSlug}`, {
-        replace: true,
-      });
+      navigate(`/${correctSlug}`, { replace: true });
     }
-  }, [anime, jikanInfo, id, routeId, navigate]);
+  }, [anime, jikanInfo, tmdbInfo, id, routeId, navigate]);
 
-  // LOAD TABS
   useEffect(() => {
     if (!anime || !id) return;
     if (loadedTabs[activeTab]) return;
@@ -157,43 +155,22 @@ export default function AnimeInfo() {
       try {
         setTabLoading(true);
 
-        // EPISODES
         if (activeTab === "episodes") {
           const res = await getEpisodes(id);
-
-          const data = Array.isArray(res)
-            ? res
-            : res?.results || [];
-
-          if (alive) {
-            setEpisodes(data);
-          }
+          const data = Array.isArray(res) ? res : res?.results || [];
+          if (alive) setEpisodes(data);
         }
 
-        // RELATIONS
         if (activeTab === "relations") {
           const res = await getSeasons(id);
-
-          const data = Array.isArray(res)
-            ? res
-            : res?.results || [];
-
-          if (alive) {
-            setSeasons(data);
-          }
+          const data = Array.isArray(res) ? res : res?.results || [];
+          if (alive) setSeasons(data);
         }
 
-        // RECOMMENDATIONS
         if (activeTab === "recommendations") {
           const res = await getRecommendations(id);
-
-          const data = Array.isArray(res)
-            ? res
-            : res?.results || [];
-
-          if (alive) {
-            setRecommendations(data);
-          }
+          const data = Array.isArray(res) ? res : res?.results || [];
+          if (alive) setRecommendations(data);
         }
 
         if (alive) {
@@ -203,10 +180,7 @@ export default function AnimeInfo() {
           }));
         }
       } catch (error) {
-        console.error(
-          `${activeTab} tab load error:`,
-          error
-        );
+        console.error(`${activeTab} tab load error:`, error);
 
         if (alive) {
           setLoadedTabs((prev) => ({
@@ -215,9 +189,7 @@ export default function AnimeInfo() {
           }));
         }
       } finally {
-        if (alive) {
-          setTabLoading(false);
-        }
+        if (alive) setTabLoading(false);
       }
     }
 
@@ -228,23 +200,16 @@ export default function AnimeInfo() {
     };
   }, [activeTab, anime, id, loadedTabs]);
 
-  // LOADING
   if (loading) {
     return <MainSkeleton />;
   }
 
-  // ERROR
   if (!anime) {
     return (
       <div className="min-h-screen bg-[#050505] text-white flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-3">
-            Anime Not Found
-          </h1>
-
-          <p className="text-gray-400">
-            Failed to load anime information.
-          </p>
+          <h1 className="text-4xl font-bold mb-3">Anime Not Found</h1>
+          <p className="text-gray-400">Failed to load anime information.</p>
         </div>
       </div>
     );
@@ -252,15 +217,9 @@ export default function AnimeInfo() {
 
   return (
     <div className="bg-[#0a0a0a] text-white min-h-screen">
-      {/* HERO */}
-      <Hero
-        anime={anime}
-        jikanInfo={jikanInfo}
-      />
+      <Hero anime={anime} jikanInfo={jikanInfo} tmdbInfo={tmdbInfo} />
 
-      {/* CONTENT */}
       <div className="max-w-7xl mx-auto px-6 pb-16">
-        {/* TABS */}
         <div className="mt-8 border-b border-white/10 flex gap-8 overflow-x-auto">
           {TABS.map((tab) => (
             <button
@@ -277,7 +236,6 @@ export default function AnimeInfo() {
           ))}
         </div>
 
-        {/* TAB CONTENT */}
         <div className="mt-8">
           {tabLoading ? (
             <TabSkeleton activeTab={activeTab} />
@@ -288,17 +246,14 @@ export default function AnimeInfo() {
                   id={id}
                   anime={anime}
                   episodes={episodes}
+                  tmdbInfo={tmdbInfo}
                 />
               )}
 
-              {activeTab === "relations" && (
-                <Seasons data={seasons} />
-              )}
+              {activeTab === "relations" && <Seasons data={seasons} />}
 
               {activeTab === "recommendations" && (
-                <Recommendations
-                  data={recommendations}
-                />
+                <Recommendations data={recommendations} />
               )}
             </>
           )}
@@ -307,10 +262,6 @@ export default function AnimeInfo() {
     </div>
   );
 }
-
-// ============================
-// MAIN SKELETON
-// ============================
 
 function MainSkeleton() {
   return (
@@ -350,10 +301,6 @@ function MainSkeleton() {
     </div>
   );
 }
-
-// ============================
-// TAB SKELETON
-// ============================
 
 function TabSkeleton({ activeTab }) {
   if (activeTab === "episodes") {
