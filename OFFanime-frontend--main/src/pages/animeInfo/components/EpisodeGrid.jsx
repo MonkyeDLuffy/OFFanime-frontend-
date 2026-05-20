@@ -6,11 +6,26 @@ import { createAnimeSlug } from "@/src/utils/slug.utils";
 
 const RANGE_SIZE = 100;
 
-export default function EpisodeGrid({ id, anime, episodes = [] }) {
+export default function EpisodeGrid({ id, anime, episodes = [], tmdbInfo }) {
   const [selectedRange, setSelectedRange] = useState(0);
 
   const animeTitle = anime?.title || anime?.name || anime?.animeTitle || "anime";
   const animeSlug = createAnimeSlug(animeTitle, id);
+
+  const tmdbEpisodesMap = useMemo(() => {
+    const map = {};
+
+    const list = tmdbInfo?.episodes || [];
+
+    list.forEach((ep) => {
+      const epNo = Number(ep.episodeNumber || ep.episode_number || ep.number);
+      if (!epNo) return;
+
+      map[epNo] = ep;
+    });
+
+    return map;
+  }, [tmdbInfo]);
 
   const sortedEpisodes = useMemo(() => {
     return [...episodes].sort((a, b) => {
@@ -21,11 +36,18 @@ export default function EpisodeGrid({ id, anime, episodes = [] }) {
   }, [episodes]);
 
   const ranges = useMemo(() => {
-    const total = sortedEpisodes.length;
+    const maxEp = Math.max(
+      ...sortedEpisodes.map((ep, index) =>
+        Number(ep.number || ep.episode || ep.episodeId || index + 1)
+      )
+    );
+
+    if (!maxEp || maxEp < 1) return [];
+
     const result = [];
 
-    for (let start = 1; start <= total; start += RANGE_SIZE) {
-      const end = Math.min(start + RANGE_SIZE - 1, total);
+    for (let start = 1; start <= maxEp; start += RANGE_SIZE) {
+      const end = Math.min(start + RANGE_SIZE - 1, maxEp);
 
       result.push({
         start,
@@ -91,10 +113,18 @@ export default function EpisodeGrid({ id, anime, episodes = [] }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {visibleEpisodes.map((ep, index) => {
-          const epNo = ep.number || ep.episode || ep.episodeId || index + 1;
+          const epNo = Number(ep.number || ep.episode || ep.episodeId || index + 1);
+
+          const tmdbEp = tmdbEpisodesMap[epNo];
 
           const realTitle =
-            ep.title || ep.name || ep.episodeTitle || ep.japaneseTitle || "";
+            tmdbEp?.title ||
+            tmdbEp?.name ||
+            ep.title ||
+            ep.name ||
+            ep.episodeTitle ||
+            ep.japaneseTitle ||
+            "";
 
           const epTitle =
             realTitle &&
@@ -103,6 +133,8 @@ export default function EpisodeGrid({ id, anime, episodes = [] }) {
               : `Episode ${epNo}`;
 
           const image =
+            tmdbEp?.image ||
+            tmdbEp?.still ||
             ep.thumbnail ||
             ep.snapshot ||
             ep.preview ||
