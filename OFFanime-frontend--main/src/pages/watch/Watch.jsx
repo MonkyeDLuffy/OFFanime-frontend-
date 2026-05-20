@@ -82,7 +82,9 @@ export default function Watch() {
   };
 
   const sortedEpisodes = useMemo(() => {
-    return [...episodes].sort((a, b) => getEpisodeNumber(a) - getEpisodeNumber(b));
+    return [...episodes].sort(
+      (a, b) => getEpisodeNumber(a) - getEpisodeNumber(b)
+    );
   }, [episodes]);
 
   const ranges = useMemo(() => {
@@ -94,7 +96,6 @@ export default function Watch() {
     return Array.from({ length: totalRanges }, (_, index) => {
       const start = index * EPISODES_PER_RANGE + 1;
       const end = Math.min((index + 1) * EPISODES_PER_RANGE, maxEp);
-
       return { start, end };
     });
   }, [sortedEpisodes]);
@@ -120,7 +121,7 @@ export default function Watch() {
     if (correctRangeIndex !== -1 && correctRangeIndex !== episodeRange) {
       setEpisodeRange(correctRangeIndex);
     }
-  }, [episode, ranges]);
+  }, [episode, ranges, episodeRange]);
 
   useEffect(() => {
     if (!anime || !episode) return;
@@ -193,30 +194,10 @@ export default function Watch() {
         setEpisodes(Array.isArray(cleanEpisodes) ? cleanEpisodes : []);
 
         const fallbackServers = [
-          {
-            id: "megaplay-sub",
-            name: "MegaPlay",
-            provider: "megaplay",
-            type: "sub",
-          },
-          {
-            id: "megaplay-dub",
-            name: "MegaPlay",
-            provider: "megaplay",
-            type: "dub",
-          },
-          {
-            id: "animepahe-sub",
-            name: "AnimePahe",
-            provider: "animepahe",
-            type: "sub",
-          },
-          {
-            id: "animepahe-dub",
-            name: "AnimePahe",
-            provider: "animepahe",
-            type: "dub",
-          },
+          { id: "megaplay-sub", name: "MegaPlay", provider: "megaplay", type: "sub" },
+          { id: "megaplay-dub", name: "MegaPlay", provider: "megaplay", type: "dub" },
+          { id: "animepahe-sub", name: "AnimePahe", provider: "animepahe", type: "sub" },
+          { id: "animepahe-dub", name: "AnimePahe", provider: "animepahe", type: "dub" },
         ];
 
         setServers(
@@ -230,30 +211,10 @@ export default function Watch() {
         setEpisodes([]);
 
         setServers([
-          {
-            id: "megaplay-sub",
-            name: "MegaPlay",
-            provider: "megaplay",
-            type: "sub",
-          },
-          {
-            id: "megaplay-dub",
-            name: "MegaPlay",
-            provider: "megaplay",
-            type: "dub",
-          },
-          {
-            id: "animepahe-sub",
-            name: "AnimePahe",
-            provider: "animepahe",
-            type: "sub",
-          },
-          {
-            id: "animepahe-dub",
-            name: "AnimePahe",
-            provider: "animepahe",
-            type: "dub",
-          },
+          { id: "megaplay-sub", name: "MegaPlay", provider: "megaplay", type: "sub" },
+          { id: "megaplay-dub", name: "MegaPlay", provider: "megaplay", type: "dub" },
+          { id: "animepahe-sub", name: "AnimePahe", provider: "animepahe", type: "sub" },
+          { id: "animepahe-dub", name: "AnimePahe", provider: "animepahe", type: "dub" },
         ]);
       } finally {
         if (alive) setLoading(false);
@@ -485,16 +446,12 @@ export default function Watch() {
   const iframeUrl = useMemo(() => {
     if (stream?.provider === "animepahe") {
       const embed = selectedAnimePaheSource?.embed;
-
       if (!embed) return "";
-
       return `${embed}${embed.includes("?") ? "&" : "?"}reload=${reloadKey}`;
     }
 
     const normalUrl = stream?.url || stream?.embed || "";
-
     if (!normalUrl) return "";
-
     return `${normalUrl}${normalUrl.includes("?") ? "&" : "?"}reload=${reloadKey}`;
   }, [stream, selectedAnimePaheSource, reloadKey]);
 
@@ -725,45 +682,81 @@ export default function Watch() {
                 </div>
 
                 {ranges.length >= 1 && (
-  <div className="relative">
-    <button
-      type="button"
-      onClick={() => setRangeOpen((prev) => !prev)}
-      className="min-w-[120px] flex items-center justify-between gap-3 bg-[#1b1b1b] border border-white/10 hover:border-white/25 hover:bg-white/10 rounded-xl px-4 py-2 text-sm font-semibold text-white transition"
-    >
-      <span>
-        {ranges[episodeRange]?.start}-{ranges[episodeRange]?.end}
-      </span>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setRangeOpen((prev) => !prev)}
+                      className="min-w-[120px] flex items-center justify-between gap-3 bg-[#1b1b1b] border border-white/10 hover:border-white/25 hover:bg-white/10 rounded-xl px-4 py-2 text-sm font-semibold text-white transition"
+                    >
+                      <span>
+                        {ranges[episodeRange]?.start}-{ranges[episodeRange]?.end}
+                      </span>
 
-      <span className={`transition ${rangeOpen ? "rotate-180" : ""}`}>
-        ▼
-      </span>
-    </button>
+                      <span className={`transition ${rangeOpen ? "rotate-180" : ""}`}>
+                        ▼
+                      </span>
+                    </button>
 
-    {rangeOpen && (
-      <div className="absolute right-0 top-full mt-2 w-[140px] bg-[#151515] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
-        {ranges.map((range, index) => {
-          const active = episodeRange === index;
+                    {rangeOpen && (
+                      <div className="absolute right-0 top-full mt-2 w-[140px] bg-[#151515] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
+                        {ranges.map((range, index) => {
+                          const active = episodeRange === index;
 
-          return (
-            <button
-              key={index}
-              type="button"
-              onClick={() => {
-                setEpisodeRange(index);
-                setRangeOpen(false);
-              }}
-              className={`w-full text-left px-4 py-3 text-sm font-semibold transition ${
-                active
-                  ? "bg-white text-black"
-                  : "text-white hover:bg-white/10"
-              }`}
-            >
-              {range.start}-{range.end}
-            </button>
-          );
-        })}
+                          return (
+                            <button
+                              key={index}
+                              type="button"
+                              onClick={() => {
+                                setEpisodeRange(index);
+                                setRangeOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-3 text-sm font-semibold transition ${
+                                active
+                                  ? "bg-white text-black"
+                                  : "text-white hover:bg-white/10"
+                              }`}
+                            >
+                              {range.start}-{range.end}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="max-h-[720px] overflow-y-auto p-4 grid grid-cols-3 gap-2">
+              {visibleEpisodes.length === 0 ? (
+                <p className="text-gray-400 col-span-3">No episodes found.</p>
+              ) : (
+                visibleEpisodes.map((ep) => {
+                  const epNumber = getEpisodeNumber(ep);
+
+                  return (
+                    <button
+                      key={ep.id || ep.episodeId || epNumber}
+                      onClick={() => goToEpisode(ep)}
+                      className={`h-12 rounded-xl border font-semibold transition ${
+                        String(epNumber) === String(episode)
+                          ? "bg-white text-black border-white"
+                          : "bg-[#1b1b1b] text-white border-white/10 hover:bg-white/10"
+                      }`}
+                    >
+                      <FontAwesomeIcon
+                        icon={faPlay}
+                        className="text-[10px] mr-2"
+                      />
+                      {epNumber}
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </aside>
+        </div>
       </div>
-    )}
-  </div>
-)}
+    </div>
+  );
+}
