@@ -1,6 +1,6 @@
+import { useEffect, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay, Pagination, EffectFade } from "swiper/modules";
-import { useEffect, useState } from "react";
 
 import "swiper/css";
 import "swiper/css/autoplay";
@@ -78,22 +78,30 @@ const Spotlight = ({ spotlights = [] }) => {
             <button className="spotlight-next">›</button>
           </div>
 
-          {spotlights.map((item, index) => (
-            <SwiperSlide className="relative h-full" key={item.id || index}>
-              <div className="relative h-full w-full">
-                <Banner item={item} index={index} />
+          {spotlights.map((item, index) => {
+            const logo = tmdbLogos[item.id];
 
-                {tmdbLogos[item.id] && (
-                  <img
-                    src={tmdbLogos[item.id]}
-                    alt={item.title}
-                    className="absolute left-[55px] top-[250px] z-[40] max-w-[460px] max-h-[160px] object-contain drop-shadow-[0_0_35px_rgba(0,0,0,1)] max-md:left-5 max-md:top-[150px] max-md:max-w-[260px]"
-                    loading="lazy"
-                  />
-                )}
-              </div>
-            </SwiperSlide>
-          ))}
+            return (
+              <SwiperSlide className="relative h-full" key={item.id || index}>
+                <div
+                  className={`relative h-full w-full ${
+                    logo ? "[&_h1]:hidden" : ""
+                  }`}
+                >
+                  <Banner item={item} index={index} />
+
+                  {logo && (
+                    <img
+                      src={logo}
+                      alt={item.title || item.name}
+                      className="absolute left-[55px] top-[245px] z-[50] max-w-[520px] max-h-[190px] object-contain object-left drop-shadow-[0_0_35px_rgba(0,0,0,1)] max-md:left-5 max-md:top-[145px] max-md:max-w-[280px]"
+                      loading="lazy"
+                    />
+                  )}
+                </div>
+              </SwiperSlide>
+            );
+          })}
         </Swiper>
       ) : (
         <div className="h-full flex items-center justify-center text-white">
