@@ -97,7 +97,7 @@ export default function Hero({ anime, jikanInfo, tmdbInfo, tmdbLoading }) {
 
             <div className="max-w-[950px] pt-4">
               {tmdbLoading ? (
-                <div className="w-[360px] max-w-full h-[95px] rounded-xl bg-white/10 animate-pulse mb-5" />
+                <div className="min-h-[95px] mb-5" />
               ) : logo ? (
                 <img
                   src={logo}
