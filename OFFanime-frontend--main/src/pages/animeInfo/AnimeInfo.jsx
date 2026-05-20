@@ -33,6 +33,7 @@ export default function AnimeInfo() {
   const [anime, setAnime] = useState(null);
   const [jikanInfo, setJikanInfo] = useState(null);
   const [tmdbInfo, setTmdbInfo] = useState(null);
+  const [tmdbLoading, setTmdbLoading] = useState(true);
 
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("episodes");
@@ -64,6 +65,8 @@ export default function AnimeInfo() {
         setAnime(null);
         setJikanInfo(null);
         setTmdbInfo(null);
+        setTmdbLoading(true);
+
         setEpisodes([]);
         setSeasons([]);
         setRecommendations([]);
@@ -99,10 +102,13 @@ export default function AnimeInfo() {
 
         getTmdbInfo(id)
           .then((tmdb) => {
-            if (alive && tmdb) setTmdbInfo(tmdb);
+            if (alive) setTmdbInfo(tmdb);
           })
           .catch((err) => {
             console.log("Failed to load TMDB:", err.message);
+          })
+          .finally(() => {
+            if (alive) setTmdbLoading(false);
           });
       } catch (error) {
         console.error("AnimeInfo main load error:", error);
@@ -111,6 +117,7 @@ export default function AnimeInfo() {
           setAnime(null);
           setJikanInfo(null);
           setTmdbInfo(null);
+          setTmdbLoading(false);
         }
       } finally {
         if (alive) setLoading(false);
@@ -200,9 +207,7 @@ export default function AnimeInfo() {
     };
   }, [activeTab, anime, id, loadedTabs]);
 
-  if (loading) {
-    return <MainSkeleton />;
-  }
+  if (loading) return <MainSkeleton />;
 
   if (!anime) {
     return (
@@ -217,7 +222,12 @@ export default function AnimeInfo() {
 
   return (
     <div className="bg-[#0a0a0a] text-white min-h-screen">
-      <Hero anime={anime} jikanInfo={jikanInfo} tmdbInfo={tmdbInfo} />
+      <Hero
+        anime={anime}
+        jikanInfo={jikanInfo}
+        tmdbInfo={tmdbInfo}
+        tmdbLoading={tmdbLoading}
+      />
 
       <div className="max-w-7xl mx-auto px-6 pb-16">
         <div className="mt-8 border-b border-white/10 flex gap-8 overflow-x-auto">
