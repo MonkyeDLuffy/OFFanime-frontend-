@@ -11,7 +11,6 @@ export default function Hero({ anime, jikanInfo, tmdbInfo }) {
   const title =
     jikanInfo?.titleEnglish ||
     jikanInfo?.title ||
-    tmdbInfo?.title ||
     anime?.title ||
     anime?.name ||
     anime?.animeTitle ||
@@ -21,7 +20,6 @@ export default function Hero({ anime, jikanInfo, tmdbInfo }) {
   const slug = createAnimeSlug(title, animeId);
 
   const poster =
-    tmdbInfo?.poster ||
     anime?.poster ||
     anime?.image ||
     jikanInfo?.poster ||
@@ -29,7 +27,6 @@ export default function Hero({ anime, jikanInfo, tmdbInfo }) {
     "";
 
   const banner =
-    tmdbInfo?.backdrop ||
     anime?.bannerImage ||
     anime?.banner ||
     anime?.coverImage?.extraLarge ||
@@ -42,17 +39,14 @@ export default function Hero({ anime, jikanInfo, tmdbInfo }) {
 
   const description =
     jikanInfo?.synopsis ||
-    tmdbInfo?.overview ||
     anime?.description ||
     anime?.animeDesc ||
     "No description available.";
 
   const genres = jikanInfo?.genres?.length ? jikanInfo.genres : anime?.genres || [];
-
   const type = jikanInfo?.type || anime?.type || anime?.format || "TV";
   const status = jikanInfo?.status || anime?.status || "Unknown";
   const studios = jikanInfo?.studios?.length ? jikanInfo.studios : anime?.studios || [];
-
   const trailerUrl = jikanInfo?.trailer?.embedUrl;
 
   const cleanDescription = String(description)
@@ -78,7 +72,7 @@ export default function Hero({ anime, jikanInfo, tmdbInfo }) {
             />
           )}
 
-          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/55 to-black/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-black/50 to-black/15" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/25 to-[#050505]" />
           <div className="absolute inset-x-0 bottom-0 h-[280px] bg-gradient-to-t from-[#050505] via-[#050505]/85 to-transparent" />
         </div>
@@ -116,7 +110,7 @@ export default function Hero({ anime, jikanInfo, tmdbInfo }) {
                 </h1>
               )}
 
-              <p className="text-gray-400 text-base mb-4">{title}</p>
+              {logo && <p className="text-gray-400 text-base mb-4">{title}</p>}
 
               <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-[13px] text-gray-300">
                 {type && <span>{type}</span>}
@@ -145,8 +139,16 @@ export default function Hero({ anime, jikanInfo, tmdbInfo }) {
               {jikanInfo && (
                 <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-[720px]">
                   <Stat label="MAL Score" value={jikanInfo.score || "N/A"} />
-                  <Stat label="Rank" value={jikanInfo.rank ? `#${jikanInfo.rank}` : "N/A"} />
-                  <Stat label="Popularity" value={jikanInfo.popularity ? `#${jikanInfo.popularity}` : "N/A"} />
+                  <Stat
+                    label="Rank"
+                    value={jikanInfo.rank ? `#${jikanInfo.rank}` : "N/A"}
+                  />
+                  <Stat
+                    label="Popularity"
+                    value={
+                      jikanInfo.popularity ? `#${jikanInfo.popularity}` : "N/A"
+                    }
+                  />
                   <Stat label="Members" value={formatNumber(jikanInfo.members)} />
                 </div>
               )}
