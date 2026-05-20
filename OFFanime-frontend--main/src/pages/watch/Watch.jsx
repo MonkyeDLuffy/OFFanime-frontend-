@@ -55,6 +55,7 @@ export default function Watch() {
   const [supportCountdown, setSupportCountdown] = useState(3);
   const [supportClicked, setSupportClicked] = useState(false);
   const [allowPlayer, setAllowPlayer] = useState(false);
+  const [rangeOpen, setRangeOpen] = useState(false);
 
   const title =
     anime?.title ||
@@ -723,52 +724,43 @@ export default function Watch() {
                   </p>
                 </div>
 
-                {ranges.length > 1 && (
-                  <select
-                    value={episodeRange}
-                    onChange={(e) => setEpisodeRange(Number(e.target.value))}
-                    className="bg-[#1b1b1b] border border-white/10 rounded-xl px-3 py-2 text-sm outline-none"
-                  >
-                    {ranges.map((range, index) => (
-                      <option key={index} value={index}>
-                        {range.start}-{range.end}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-            </div>
+                {ranges.length >= 1 && (
+  <div className="relative">
+    <button
+      onClick={() => setRangeOpen((prev) => !prev)}
+      className="min-w-[120px] flex items-center justify-between gap-3 bg-[#1b1b1b] border border-white/10 hover:border-white/25 hover:bg-white/10 rounded-xl px-4 py-2 text-sm font-semibold text-white transition"
+    >
+      <span>
+        {ranges[episodeRange]?.start}-{ranges[episodeRange]?.end}
+      </span>
+      <span className={`transition ${rangeOpen ? "rotate-180" : ""}`}>
+        ▼
+      </span>
+    </button>
 
-            <div className="max-h-[720px] overflow-y-auto p-4 grid grid-cols-3 gap-2">
-              {visibleEpisodes.length === 0 ? (
-                <p className="text-gray-400 col-span-3">No episodes found.</p>
-              ) : (
-                visibleEpisodes.map((ep) => {
-                  const epNumber = getEpisodeNumber(ep);
+    {rangeOpen && (
+      <div className="absolute right-0 top-full mt-2 w-[140px] bg-[#151515] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
+        {ranges.map((range, index) => {
+          const active = episodeRange === index;
 
-                  return (
-                    <button
-                      key={ep.id || ep.episodeId || epNumber}
-                      onClick={() => goToEpisode(ep)}
-                      className={`h-12 rounded-xl border font-semibold transition ${
-                        String(epNumber) === String(episode)
-                          ? "bg-white text-black border-white"
-                          : "bg-[#1b1b1b] text-white border-white/10 hover:bg-white/10"
-                      }`}
-                    >
-                      <FontAwesomeIcon
-                        icon={faPlay}
-                        className="text-[10px] mr-2"
-                      />
-                      {epNumber}
-                    </button>
-                  );
-                })
-              )}
-            </div>
-          </aside>
-        </div>
+          return (
+            <button
+              key={index}
+              onClick={() => {
+                setEpisodeRange(index);
+                setRangeOpen(false);
+              }}
+              className={`w-full text-left px-4 py-3 text-sm font-semibold transition ${
+                active
+                  ? "bg-white text-black"
+                  : "text-white hover:bg-white/10"
+              }`}
+            >
+              {range.start}-{range.end}
+            </button>
+          );
+        })}
       </div>
-    </div>
-  );
-}
+    )}
+  </div>
+)}
