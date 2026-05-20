@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlay, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { createAnimeSlug } from "@/src/utils/slug.utils";
 
-export default function Hero({ anime, jikanInfo, tmdbInfo }) {
+export default function Hero({ anime, jikanInfo, tmdbInfo, tmdbLoading }) {
   const [expanded, setExpanded] = useState(false);
   const [trailerOpen, setTrailerOpen] = useState(false);
 
@@ -96,7 +96,9 @@ export default function Hero({ anime, jikanInfo, tmdbInfo }) {
             </div>
 
             <div className="max-w-[950px] pt-4">
-              {logo ? (
+              {tmdbLoading ? (
+                <div className="w-[360px] max-w-full h-[95px] rounded-xl bg-white/10 animate-pulse mb-5" />
+              ) : logo ? (
                 <img
                   src={logo}
                   alt={title}
@@ -109,8 +111,6 @@ export default function Hero({ anime, jikanInfo, tmdbInfo }) {
                   {title}
                 </h1>
               )}
-
-              {logo && <p className="text-gray-400 text-base mb-4">{title}</p>}
 
               <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-[13px] text-gray-300">
                 {type && <span>{type}</span>}
@@ -139,16 +139,8 @@ export default function Hero({ anime, jikanInfo, tmdbInfo }) {
               {jikanInfo && (
                 <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-[720px]">
                   <Stat label="MAL Score" value={jikanInfo.score || "N/A"} />
-                  <Stat
-                    label="Rank"
-                    value={jikanInfo.rank ? `#${jikanInfo.rank}` : "N/A"}
-                  />
-                  <Stat
-                    label="Popularity"
-                    value={
-                      jikanInfo.popularity ? `#${jikanInfo.popularity}` : "N/A"
-                    }
-                  />
+                  <Stat label="Rank" value={jikanInfo.rank ? `#${jikanInfo.rank}` : "N/A"} />
+                  <Stat label="Popularity" value={jikanInfo.popularity ? `#${jikanInfo.popularity}` : "N/A"} />
                   <Stat label="Members" value={formatNumber(jikanInfo.members)} />
                 </div>
               )}
