@@ -110,18 +110,18 @@ export default function Watch() {
     });
   }, [sortedEpisodes, ranges, episodeRange]);
 
-  useEffect(() => {
-    if (!ranges.length || !episode) return;
+useEffect(() => {
+  if (!ranges.length || !episode) return;
 
-    const epNum = Number(episode);
-    const correctRangeIndex = ranges.findIndex(
-      (range) => epNum >= range.start && epNum <= range.end
-    );
+  const epNum = Number(episode);
+  const correctRangeIndex = ranges.findIndex(
+    (range) => epNum >= range.start && epNum <= range.end
+  );
 
-    if (correctRangeIndex !== -1 && correctRangeIndex !== episodeRange) {
-      setEpisodeRange(correctRangeIndex);
-    }
-  }, [episode, ranges, episodeRange]);
+  if (correctRangeIndex !== -1) {
+    setEpisodeRange(correctRangeIndex);
+  }
+}, [episode, ranges]);
 
   useEffect(() => {
     if (!anime || !episode) return;
