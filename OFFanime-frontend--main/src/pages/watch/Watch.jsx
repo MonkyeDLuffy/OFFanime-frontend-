@@ -36,30 +36,26 @@ function PremiumBannerAd() {
     };
 
     const script = document.createElement("script");
-
     script.src =
       "https://www.highperformanceformat.com/fa18fe18755cc0b110e4155f955a4c3e/invoke.js";
-
     script.async = true;
 
     adRef.current.appendChild(script);
   }, []);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#111] via-[#161616] to-[#0b0b0b] shadow-[0_0_25px_rgba(255,255,255,0.04)] backdrop-blur-xl p-4">
+    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#111111] via-[#161616] to-[#0b0b0b] shadow-[0_0_25px_rgba(255,255,255,0.04)] backdrop-blur-xl p-4">
       <div className="flex items-center justify-between mb-3">
         <span className="text-[11px] uppercase tracking-[0.25em] text-zinc-400 font-semibold">
           Sponsored
         </span>
 
-        <span className="text-[10px] text-zinc-500">
-          Support OFFANIME
-        </span>
+        <span className="text-[10px] text-zinc-500">Support OFFANIME</span>
       </div>
 
       <div
         ref={adRef}
-        className="w-[320px] h-[50px] overflow-hidden rounded-xl border border-white/5 bg-black/40"
+        className="w-[320px] h-[50px] max-w-full overflow-hidden rounded-xl border border-white/5 bg-black/40 mx-auto"
       />
     </div>
   );
@@ -90,7 +86,6 @@ export default function Watch() {
   });
 
   const [selectedQuality, setSelectedQuality] = useState("720p");
-
   const [stream, setStream] = useState(null);
   const [loading, setLoading] = useState(true);
   const [streamLoading, setStreamLoading] = useState(false);
@@ -237,30 +232,10 @@ export default function Watch() {
         setAnime(cleanAnime);
 
         const fallbackServers = [
-          {
-            id: "megaplay-sub",
-            name: "MegaPlay",
-            provider: "megaplay",
-            type: "sub",
-          },
-          {
-            id: "megaplay-dub",
-            name: "MegaPlay",
-            provider: "megaplay",
-            type: "dub",
-          },
-          {
-            id: "animepahe-sub",
-            name: "AnimePahe",
-            provider: "animepahe",
-            type: "sub",
-          },
-          {
-            id: "animepahe-dub",
-            name: "AnimePahe",
-            provider: "animepahe",
-            type: "dub",
-          },
+          { id: "megaplay-sub", name: "MegaPlay", provider: "megaplay", type: "sub" },
+          { id: "megaplay-dub", name: "MegaPlay", provider: "megaplay", type: "dub" },
+          { id: "animepahe-sub", name: "AnimePahe", provider: "animepahe", type: "sub" },
+          { id: "animepahe-dub", name: "AnimePahe", provider: "animepahe", type: "dub" },
         ];
 
         setServers(
@@ -298,30 +273,10 @@ export default function Watch() {
         setEpisodesLoading(false);
 
         setServers([
-          {
-            id: "megaplay-sub",
-            name: "MegaPlay",
-            provider: "megaplay",
-            type: "sub",
-          },
-          {
-            id: "megaplay-dub",
-            name: "MegaPlay",
-            provider: "megaplay",
-            type: "dub",
-          },
-          {
-            id: "animepahe-sub",
-            name: "AnimePahe",
-            provider: "animepahe",
-            type: "sub",
-          },
-          {
-            id: "animepahe-dub",
-            name: "AnimePahe",
-            provider: "animepahe",
-            type: "dub",
-          },
+          { id: "megaplay-sub", name: "MegaPlay", provider: "megaplay", type: "sub" },
+          { id: "megaplay-dub", name: "MegaPlay", provider: "megaplay", type: "dub" },
+          { id: "animepahe-sub", name: "AnimePahe", provider: "animepahe", type: "sub" },
+          { id: "animepahe-dub", name: "AnimePahe", provider: "animepahe", type: "dub" },
         ]);
 
         setLoading(false);
@@ -394,9 +349,7 @@ export default function Watch() {
 
     const json = await res.json();
 
-    if (json?.error) {
-      throw new Error(json.error);
-    }
+    if (json?.error) throw new Error(json.error);
 
     return {
       provider: "animepahe",
@@ -481,9 +434,7 @@ export default function Watch() {
       (range) => Number(epNumber) >= range.start && Number(epNumber) <= range.end
     );
 
-    if (correctRangeIndex !== -1) {
-      setEpisodeRange(correctRangeIndex);
-    }
+    if (correctRangeIndex !== -1) setEpisodeRange(correctRangeIndex);
 
     navigate(`/watch/${correctSlug}?ep=${epNumber}`, { replace: true });
 
@@ -553,16 +504,12 @@ export default function Watch() {
   const iframeUrl = useMemo(() => {
     if (stream?.provider === "animepahe") {
       const embed = selectedAnimePaheSource?.embed;
-
       if (!embed) return "";
-
       return `${embed}${embed.includes("?") ? "&" : "?"}reload=${reloadKey}`;
     }
 
     const normalUrl = stream?.url || stream?.embed || "";
-
     if (!normalUrl) return "";
-
     return `${normalUrl}${normalUrl.includes("?") ? "&" : "?"}reload=${reloadKey}`;
   }, [stream, selectedAnimePaheSource, reloadKey]);
 
@@ -781,12 +728,12 @@ export default function Watch() {
                 </div>
               )}
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-  <PremiumBannerAd />
-  <PremiumBannerAd />
-</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <PremiumBannerAd />
+              <PremiumBannerAd />
+            </div>
+          </div>
 
           <aside className="bg-[#121212] border border-white/10 rounded-2xl overflow-hidden h-fit xl:sticky xl:top-24">
             <div className="p-4 border-b border-white/10">
