@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -18,6 +18,52 @@ import { createAnimeSlug, getAnimeIdFromSlug } from "@/src/utils/slug.utils";
 
 const ANIMEPAHE_API = "https://anime-streaming-system-1.onrender.com";
 const EPISODES_PER_RANGE = 100;
+
+function PremiumBannerAd() {
+  const adRef = useRef(null);
+
+  useEffect(() => {
+    if (!adRef.current) return;
+
+    adRef.current.innerHTML = "";
+
+    window.atOptions = {
+      key: "fa18fe18755cc0b110e4155f955a4c3e",
+      format: "iframe",
+      height: 50,
+      width: 320,
+      params: {},
+    };
+
+    const script = document.createElement("script");
+
+    script.src =
+      "https://www.highperformanceformat.com/fa18fe18755cc0b110e4155f955a4c3e/invoke.js";
+
+    script.async = true;
+
+    adRef.current.appendChild(script);
+  }, []);
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#111] via-[#161616] to-[#0b0b0b] shadow-[0_0_25px_rgba(255,255,255,0.04)] backdrop-blur-xl p-4">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[11px] uppercase tracking-[0.25em] text-zinc-400 font-semibold">
+          Sponsored
+        </span>
+
+        <span className="text-[10px] text-zinc-500">
+          Support OFFANIME
+        </span>
+      </div>
+
+      <div
+        ref={adRef}
+        className="w-[320px] h-[50px] overflow-hidden rounded-xl border border-white/5 bg-black/40"
+      />
+    </div>
+  );
+}
 
 export default function Watch() {
   const { id: animeSlug } = useParams();
@@ -736,6 +782,11 @@ export default function Watch() {
               )}
             </div>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  <PremiumBannerAd />
+  <PremiumBannerAd />
+</div>
 
           <aside className="bg-[#121212] border border-white/10 rounded-2xl overflow-hidden h-fit xl:sticky xl:top-24">
             <div className="p-4 border-b border-white/10">
