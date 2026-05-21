@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useRef } from "react";
 import { useSearchParams, Link, useParams } from "react-router-dom";
 import getCategoryInfo from "@/src/utils/getCategoryInfo.utils";
 import CategoryCard from "@/src/components/categorycard/CategoryCard";
