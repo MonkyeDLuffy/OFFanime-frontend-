@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams, Link, useParams } from "react-router-dom";
 import getCategoryInfo from "@/src/utils/getCategoryInfo.utils";
 import CategoryCard from "@/src/components/categorycard/CategoryCard";
@@ -13,51 +13,6 @@ import {
   generateCollectionSchema,
 } from "@/src/utils/seo.utils";
 
-function BannerAd320x50() {
-  const adRef = useRef(null);
-
-  useEffect(() => {
-    if (!adRef.current) return;
-
-    adRef.current.innerHTML = "";
-
-    window.atOptions = {
-      key: "fa18fe18755cc0b110e4155f955a4c3e",
-      format: "iframe",
-      height: 50,
-      width: 320,
-      params: {},
-    };
-
-    const script = document.createElement("script");
-    script.src =
-      "https://www.highperformanceformat.com/fa18fe18755cc0b110e4155f955a4c3e/invoke.js";
-    script.async = true;
-
-    adRef.current.appendChild(script);
-  }, []);
-
-  return (
-    <div className="w-full flex justify-center mt-8 mb-6 px-4">
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#111] via-[#161616] to-[#0b0b0b] shadow-[0_0_25px_rgba(255,255,255,0.04)] p-4">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-[11px] uppercase tracking-[0.25em] text-zinc-400 font-semibold">
-            Sponsored
-          </span>
-
-          <span className="text-[10px] text-zinc-500">
-            Support OFFANIME
-          </span>
-        </div>
-
-        <div
-          ref={adRef}
-          className="w-[320px] h-[50px] overflow-hidden rounded-xl bg-black/40 flex items-center justify-center"
-        />
-      </div>
-    </div>
-  );
-}
 
 function AtoZ() {
   const { letter } = useParams();
