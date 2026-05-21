@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams, Link, useParams } from "react-router-dom";
 import getCategoryInfo from "@/src/utils/getCategoryInfo.utils";
 import CategoryCard from "@/src/components/categorycard/CategoryCard";
@@ -12,8 +12,6 @@ import {
   generateCanonicalUrl,
   generateCollectionSchema,
 } from "@/src/utils/seo.utils";
-
-import { useEffect, useRef } from "react";
 
 function BannerAd320x50() {
   const adRef = useRef(null);
@@ -46,6 +44,7 @@ function BannerAd320x50() {
           <span className="text-[11px] uppercase tracking-[0.25em] text-zinc-400 font-semibold">
             Sponsored
           </span>
+
           <span className="text-[10px] text-zinc-500">
             Support OFFANIME
           </span>
@@ -70,15 +69,14 @@ function AtoZ() {
   const [totalPages, setTotalPages] = useState(0);
 
   const page = parseInt(searchParams.get("page")) || 1;
-
   const currentLetter = letter ? letter.toLowerCase() : "az-list";
 
   const apiPath =
-  !letter || letter.toLowerCase() === "all"
-    ? "az-list"
-    : letter === "#"
-    ? "az-list/other"
-    : `az-list/${letter.toLowerCase()}`;
+    !letter || letter.toLowerCase() === "all"
+      ? "az-list"
+      : letter === "#"
+      ? "az-list/other"
+      : `az-list/${letter.toLowerCase()}`;
 
   useEffect(() => {
     const fetchAtoZInfo = async () => {
@@ -176,7 +174,9 @@ function AtoZ() {
 
       <div className="max-w-[1600px] mx-auto flex flex-col mt-[90px] px-4">
         <div className="flex flex-col gap-y-3 mt-6">
-          <h1 className="font-bold text-2xl text-white">Sort By Letters</h1>
+          <h1 className="font-bold text-2xl text-white">
+            Sort By Letters
+          </h1>
 
           <div className="flex gap-x-[7px] flex-wrap justify-start gap-y-2">
             {letters.map((item, index) => {
@@ -208,6 +208,8 @@ function AtoZ() {
             })}
           </div>
         </div>
+
+        <BannerAd320x50 />
 
         <div className="w-full flex flex-col gap-y-8">
           {categoryInfo.length > 0 ? (
