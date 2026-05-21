@@ -2,6 +2,85 @@ import logoTitle from "@/src/config/logoTitle.js";
 import website_name from "@/src/config/website.js";
 import { Link } from "react-router-dom";
 import { FaDiscord, FaTelegram } from "react-icons/fa";
+import { useEffect, useRef } from "react";
+
+function PremiumBannerAd() {
+  const adRef = useRef(null);
+
+  useEffect(() => {
+    if (!adRef.current) return;
+
+    adRef.current.innerHTML = "";
+
+    window.atOptions = {
+      key: "fa18fe18755cc0b110e4155f955a4c3e",
+      format: "iframe",
+      height: 50,
+      width: 320,
+      params: {},
+    };
+
+    const script = document.createElement("script");
+    script.src =
+      "https://www.highperformanceformat.com/fa18fe18755cc0b110e4155f955a4c3e/invoke.js";
+
+    script.async = true;
+
+    adRef.current.appendChild(script);
+  }, []);
+
+  return (
+    <div className="w-full flex justify-center mt-8 mb-6 px-4">
+      <div
+        className="
+          relative
+          overflow-hidden
+          rounded-2xl
+          border border-white/10
+          bg-gradient-to-br
+          from-[#111111]
+          via-[#161616]
+          to-[#0b0b0b]
+          shadow-[0_0_25px_rgba(255,255,255,0.04)]
+          backdrop-blur-xl
+          p-4
+        "
+      >
+        {/* glow */}
+        <div className="absolute inset-0 bg-white/[0.02] pointer-events-none" />
+
+        {/* top label */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-white/60 animate-pulse" />
+
+            <span className="text-[11px] uppercase tracking-[0.25em] text-zinc-400 font-semibold">
+              Sponsored
+            </span>
+          </div>
+
+          <span className="text-[10px] text-zinc-500">
+            Support OFFANIME
+          </span>
+        </div>
+
+        {/* ad */}
+        <div
+          ref={adRef}
+          className="
+            w-[320px]
+            h-[50px]
+            overflow-hidden
+            rounded-xl
+            border border-white/5
+            bg-black/40
+            flex items-center justify-center
+          "
+        />
+      </div>
+    </div>
+  );
+}
 
 function Footer() {
   return (
@@ -42,7 +121,7 @@ function Footer() {
       {/* Bottom Footer */}
       <div className="bg-[#0a0a0a] border-t border-white/5 mt-6">
         <div className="max-w-[1920px] mx-auto px-4 py-6">
-          
+
           {/* A-Z List */}
           <div className="mb-6 text-center sm:text-left">
             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4 items-center sm:items-start">
@@ -75,6 +154,9 @@ function Footer() {
               ))}
             </div>
 
+            {/* PREMIUM AD */}
+            <PremiumBannerAd />
+
             {/* Footer Links */}
             <div className="flex gap-4 flex-wrap justify-center sm:justify-start mt-4">
               <Link
@@ -102,7 +184,7 @@ function Footer() {
 
           {/* Legal + Credit */}
           <div className="flex flex-col lg:flex-row justify-between items-center gap-4 text-sm text-white/40 border-t border-white/5 pt-5">
-            
+
             {/* Left Side */}
             <div className="space-y-2 text-center lg:text-left">
               <p className="max-w-4xl">
@@ -143,72 +225,3 @@ function Footer() {
 }
 
 export default Footer;
-
-{/* PREMIUM BANNER AD */}
-<div className="w-full flex justify-center mt-8 mb-6 px-4">
-  <div
-    className="
-      relative
-      overflow-hidden
-      rounded-2xl
-      border border-white/10
-      bg-gradient-to-br
-      from-[#111111]
-      via-[#161616]
-      to-[#0b0b0b]
-      shadow-[0_0_25px_rgba(255,255,255,0.04)]
-      backdrop-blur-xl
-      p-4
-    "
-  >
-    {/* glow */}
-    <div className="absolute inset-0 bg-white/[0.02] pointer-events-none" />
-
-    {/* top label */}
-    <div className="flex items-center justify-between mb-3">
-      <div className="flex items-center gap-2">
-        <div className="w-2 h-2 rounded-full bg-white/60 animate-pulse" />
-
-        <span className="text-[11px] uppercase tracking-[0.25em] text-zinc-400 font-semibold">
-          Sponsored
-        </span>
-      </div>
-
-      <span className="text-[10px] text-zinc-500">
-        Support OFFANIME
-      </span>
-    </div>
-
-    {/* ad */}
-    <div
-      className="
-        w-[320px]
-        h-[50px]
-        overflow-hidden
-        rounded-xl
-        border border-white/5
-        bg-black/40
-        flex items-center justify-center
-      "
-    >
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            atOptions = {
-              'key' : 'fa18fe18755cc0b110e4155f955a4c3e',
-              'format' : 'iframe',
-              'height' : 50,
-              'width' : 320,
-              'params' : {}
-            };
-          `,
-        }}
-      />
-
-      <script
-        async
-        src="https://www.highperformanceformat.com/fa18fe18755cc0b110e4155f955a4c3e/invoke.js"
-      />
-    </div>
-  </div>
-</div>
