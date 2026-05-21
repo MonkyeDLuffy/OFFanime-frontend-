@@ -21,6 +21,7 @@ function PremiumBannerAd() {
     };
 
     const script = document.createElement("script");
+
     script.src =
       "https://www.highperformanceformat.com/fa18fe18755cc0b110e4155f955a4c3e/invoke.js";
 
@@ -30,7 +31,7 @@ function PremiumBannerAd() {
   }, []);
 
   return (
-    <div className="w-full flex justify-center mt-8 mb-6 px-4">
+    <div className="w-fit">
       <div
         className="
           relative
@@ -122,63 +123,73 @@ function Footer() {
       <div className="bg-[#0a0a0a] border-t border-white/5 mt-6">
         <div className="max-w-[1920px] mx-auto px-4 py-6">
 
-          {/* A-Z List */}
-          <div className="mb-6 text-center sm:text-left">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4 items-center sm:items-start">
-              <h2 className="text-sm font-medium text-white">
-                A-Z LIST
-              </h2>
+          {/* TOP SECTION */}
+          <div className="flex flex-col xl:flex-row justify-between gap-8">
 
-              <span className="text-sm text-white/60">
-                Browse anime alphabetically
-              </span>
+            {/* LEFT SIDE */}
+            <div className="flex-1">
+
+              {/* A-Z List */}
+              <div className="mb-6 text-center sm:text-left">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-4 items-center sm:items-start">
+                  <h2 className="text-sm font-medium text-white">
+                    A-Z LIST
+                  </h2>
+
+                  <span className="text-sm text-white/60">
+                    Browse anime alphabetically
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 justify-center sm:justify-start">
+                  {[
+                    "All",
+                    "#",
+                    "0-9",
+                    ...Array.from(
+                      { length: 26 },
+                      (_, i) => String.fromCharCode(65 + i)
+                    ),
+                  ].map((item, index) => (
+                    <Link
+                      to={`az-list/${item === "All" ? "" : item}`}
+                      key={index}
+                      className="px-2.5 py-1 text-sm bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded transition-colors duration-300"
+                    >
+                      {item}
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Footer Links */}
+                <div className="flex gap-4 flex-wrap justify-center sm:justify-start mt-6">
+                  <Link
+                    to="/terms-of-service"
+                    className="text-sm text-white/60 hover:text-white transition-colors duration-300"
+                  >
+                    Terms of Service
+                  </Link>
+
+                  <Link
+                    to="/dmca"
+                    className="text-sm text-white/60 hover:text-white transition-colors duration-300"
+                  >
+                    DMCA
+                  </Link>
+
+                  <Link
+                    to="/contact"
+                    className="text-sm text-white/60 hover:text-white transition-colors duration-300"
+                  >
+                    Contact
+                  </Link>
+                </div>
+              </div>
             </div>
 
-            <div className="flex flex-wrap gap-1.5 justify-center sm:justify-start">
-              {[
-                "All",
-                "#",
-                "0-9",
-                ...Array.from(
-                  { length: 26 },
-                  (_, i) => String.fromCharCode(65 + i)
-                ),
-              ].map((item, index) => (
-                <Link
-                  to={`az-list/${item === "All" ? "" : item}`}
-                  key={index}
-                  className="px-2.5 py-1 text-sm bg-white/5 hover:bg-white/10 text-white/60 hover:text-white rounded transition-colors duration-300"
-                >
-                  {item}
-                </Link>
-              ))}
-            </div>
-
-            {/* PREMIUM AD */}
-            <PremiumBannerAd />
-
-            {/* Footer Links */}
-            <div className="flex gap-4 flex-wrap justify-center sm:justify-start mt-4">
-              <Link
-                to="/terms-of-service"
-                className="text-sm text-white/60 hover:text-white transition-colors duration-300"
-              >
-                Terms of Service
-              </Link>
-
-              <Link
-                to="/dmca"
-                className="text-sm text-white/60 hover:text-white transition-colors duration-300"
-              >
-                DMCA
-              </Link>
-
-              <Link
-                to="/contact"
-                className="text-sm text-white/60 hover:text-white transition-colors duration-300"
-              >
-                Contact
-              </Link>
+            {/* RIGHT SIDE AD */}
+            <div className="flex justify-center xl:justify-end xl:min-w-[360px]">
+              <PremiumBannerAd />
             </div>
           </div>
 
