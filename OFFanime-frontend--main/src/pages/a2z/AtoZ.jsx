@@ -13,7 +13,6 @@ import {
   generateCollectionSchema,
 } from "@/src/utils/seo.utils";
 
-
 function AtoZ() {
   const { letter } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -24,14 +23,15 @@ function AtoZ() {
   const [totalPages, setTotalPages] = useState(0);
 
   const page = parseInt(searchParams.get("page")) || 1;
+
   const currentLetter = letter ? letter.toLowerCase() : "az-list";
 
   const apiPath =
-    !letter || letter.toLowerCase() === "all"
-      ? "az-list"
-      : letter === "#"
-      ? "az-list/other"
-      : `az-list/${letter.toLowerCase()}`;
+  !letter || letter.toLowerCase() === "all"
+    ? "az-list"
+    : letter === "#"
+    ? "az-list/other"
+    : `az-list/${letter.toLowerCase()}`;
 
   useEffect(() => {
     const fetchAtoZInfo = async () => {
@@ -129,9 +129,7 @@ function AtoZ() {
 
       <div className="max-w-[1600px] mx-auto flex flex-col mt-[90px] px-4">
         <div className="flex flex-col gap-y-3 mt-6">
-          <h1 className="font-bold text-2xl text-white">
-            Sort By Letters
-          </h1>
+          <h1 className="font-bold text-2xl text-white">Sort By Letters</h1>
 
           <div className="flex gap-x-[7px] flex-wrap justify-start gap-y-2">
             {letters.map((item, index) => {
@@ -163,8 +161,6 @@ function AtoZ() {
             })}
           </div>
         </div>
-
-        <BannerAd320x50 />
 
         <div className="w-full flex flex-col gap-y-8">
           {categoryInfo.length > 0 ? (
