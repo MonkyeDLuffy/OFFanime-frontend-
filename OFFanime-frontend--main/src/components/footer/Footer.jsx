@@ -143,3 +143,72 @@ function Footer() {
 }
 
 export default Footer;
+
+{/* PREMIUM BANNER AD */}
+<div className="w-full flex justify-center mt-8 mb-6 px-4">
+  <div
+    className="
+      relative
+      overflow-hidden
+      rounded-2xl
+      border border-white/10
+      bg-gradient-to-br
+      from-[#111111]
+      via-[#161616]
+      to-[#0b0b0b]
+      shadow-[0_0_25px_rgba(255,255,255,0.04)]
+      backdrop-blur-xl
+      p-4
+    "
+  >
+    {/* glow */}
+    <div className="absolute inset-0 bg-white/[0.02] pointer-events-none" />
+
+    {/* top label */}
+    <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center gap-2">
+        <div className="w-2 h-2 rounded-full bg-white/60 animate-pulse" />
+
+        <span className="text-[11px] uppercase tracking-[0.25em] text-zinc-400 font-semibold">
+          Sponsored
+        </span>
+      </div>
+
+      <span className="text-[10px] text-zinc-500">
+        Support OFFANIME
+      </span>
+    </div>
+
+    {/* ad */}
+    <div
+      className="
+        w-[320px]
+        h-[50px]
+        overflow-hidden
+        rounded-xl
+        border border-white/5
+        bg-black/40
+        flex items-center justify-center
+      "
+    >
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            atOptions = {
+              'key' : 'fa18fe18755cc0b110e4155f955a4c3e',
+              'format' : 'iframe',
+              'height' : 50,
+              'width' : 320,
+              'params' : {}
+            };
+          `,
+        }}
+      />
+
+      <script
+        async
+        src="https://www.highperformanceformat.com/fa18fe18755cc0b110e4155f955a4c3e/invoke.js"
+      />
+    </div>
+  </div>
+</div>
