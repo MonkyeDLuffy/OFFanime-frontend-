@@ -71,7 +71,6 @@ function Home() {
 
         <meta property="og:url" content="https://offanime.cc" />
         <meta property="og:type" content="website" />
-
         <meta name="twitter:card" content="summary_large_image" />
 
         <meta
@@ -106,8 +105,6 @@ function Home() {
           <Genre data={homeInfo.genres} />
         </div>
 
-        <ContinueWatching />
-
         <div className="w-full grid grid-cols-[minmax(0,75%),minmax(0,25%)] gap-x-4 max-[1200px]:flex flex-col">
           <div>
             <CategoryCard
@@ -118,6 +115,8 @@ function Home() {
               limit={itemLimit}
               cardStyle="grid-cols-5 max-[1400px]:grid-cols-4 max-[758px]:grid-cols-3 max-[478px]:grid-cols-3"
             />
+
+            <ContinueWatching />
 
             <TabbedAnimeSection
               topAiring={homeInfo.top_airing}
