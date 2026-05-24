@@ -335,70 +335,86 @@ export default function Watch() {
     }
   }, [loading, animeId, episode]);
 
-  useEffect(() => {
-    let alive = true;
+ useEffect(() => {
+  let alive = true;
+  let failTimer = null;
 
-    async function loadStream() {
-      if (!animeId || !episode || loading || !anime) return;
-      if (!allowPlayer) return;
+  async function loadStream() {
+    if (!animeId || !episode || loading || !anime) return;
+    if (!allowPlayer) return;
 
-      setStreamLoading(true);
-      setIframeLoaded(false);
-      setStream(null);
+    setStreamLoading(true);
+    setIframeLoaded(false);
+    setStream(null);
 
-      try {
-        const streamId =
-          selectedServer.provider === "megaplay-mal"
-            ? finalMalId || animeId
-            : animeId;
+    try {
+      const streamId =
+        selectedServer.provider === "megaplay-mal"
+          ? finalMalId || animeId
+          : animeId;
 
-        const data = await getStreamInfo(
-          streamId,
-          episode,
-          "megaplay",
-          selectedServer.type,
-          title
-        );
+      const data = await getStreamInfo(
+        streamId,
+        episode,
+        selectedServer.provider,
+        selectedServer.type,
+        title
+      );
 
+      if (!alive) return;
+
+      setStream(data);
+      setReloadKey((prev) => prev + 1);
+
+      failTimer = setTimeout(() => {
         if (!alive) return;
 
-        setStream(data);
-        setReloadKey((prev) => prev + 1);
-        navigate(`/watch/${correctSlug}?ep=${episode}`, { replace: true });
-      } catch (err) {
-        console.error("Stream load error:", err);
+        if (!iframeLoaded) {
+          const nextServer =
+            selectedServer.provider === "megaplay-anilist"
+              ? DEFAULT_SERVERS[1]
+              : DEFAULT_SERVERS[0];
 
-        if (!alive) return;
-
-        if (selectedServer.provider === "megaplay-anilist" && finalMalId) {
-          setSelectedServer(DEFAULT_SERVERS[1]);
-        } else if (selectedServer.provider === "megaplay-mal") {
-          setSelectedServer(DEFAULT_SERVERS[0]);
-        } else {
-          setStream(null);
+          setSelectedServer(nextServer);
         }
-      } finally {
-        if (alive) setStreamLoading(false);
-      }
+      }, 8000);
+
+      navigate(`/watch/${correctSlug}?ep=${episode}`, { replace: true });
+    } catch (err) {
+      console.error("Stream load error:", err);
+
+      if (!alive) return;
+
+      const nextServer =
+        selectedServer.provider === "megaplay-anilist"
+          ? DEFAULT_SERVERS[1]
+          : DEFAULT_SERVERS[0];
+
+      setSelectedServer(nextServer);
+    } finally {
+      if (alive) setStreamLoading(false);
     }
+  }
 
-    loadStream();
+  loadStream();
 
-    return () => {
-      alive = false;
-    };
-  }, [
-    anime,
-    animeId,
-    finalMalId,
-    episode,
-    selectedServer,
-    title,
-    loading,
-    allowPlayer,
-    correctSlug,
-    navigate,
-  ]);
+  return () => {
+    alive = false;
+    if (failTimer) clearTimeout(failTimer);
+  };
+}, [
+  anime,
+  animeId,
+  finalMalId,
+  episode,
+  selectedServer,
+  title,
+  loading,
+  allowPlayer,
+  correctSlug,
+  navigate,
+  iframeLoaded,
+]);
 
   const forceReloadPlayer = () => {
     setIframeLoaded(false);
