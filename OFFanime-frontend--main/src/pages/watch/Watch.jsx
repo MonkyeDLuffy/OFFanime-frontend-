@@ -335,7 +335,7 @@ export default function Watch() {
     }
   }, [loading, animeId, episode]);
 
- useEffect(() => {
+useEffect(() => {
   let alive = true;
   let failTimer = null;
 
@@ -365,32 +365,31 @@ export default function Watch() {
 
       setStream(data);
       setReloadKey((prev) => prev + 1);
+      navigate(`/watch/${correctSlug}?ep=${episode}`, { replace: true });
 
       failTimer = setTimeout(() => {
+        const iframe = document.querySelector("iframe");
+
         if (!alive) return;
 
-        if (!iframeLoaded) {
-          const nextServer =
-            selectedServer.provider === "megaplay-anilist"
+        if (!iframe) {
+          setSelectedServer((prev) =>
+            prev.provider === "megaplay-anilist"
               ? DEFAULT_SERVERS[1]
-              : DEFAULT_SERVERS[0];
-
-          setSelectedServer(nextServer);
+              : DEFAULT_SERVERS[0]
+          );
         }
       }, 8000);
-
-      navigate(`/watch/${correctSlug}?ep=${episode}`, { replace: true });
     } catch (err) {
       console.error("Stream load error:", err);
 
       if (!alive) return;
 
-      const nextServer =
-        selectedServer.provider === "megaplay-anilist"
+      setSelectedServer((prev) =>
+        prev.provider === "megaplay-anilist"
           ? DEFAULT_SERVERS[1]
-          : DEFAULT_SERVERS[0];
-
-      setSelectedServer(nextServer);
+          : DEFAULT_SERVERS[0]
+      );
     } finally {
       if (alive) setStreamLoading(false);
     }
@@ -413,9 +412,7 @@ export default function Watch() {
   allowPlayer,
   correctSlug,
   navigate,
-  iframeLoaded,
 ]);
-
   const forceReloadPlayer = () => {
     setIframeLoaded(false);
     setReloadKey((prev) => prev + 1);
