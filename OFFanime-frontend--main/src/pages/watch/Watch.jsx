@@ -641,6 +641,58 @@ useEffect(() => {
               </div>
             </div>
 
+            <div className="flex flex-wrap gap-3">
+  {servers.map((server) => {
+    ...
+  })}
+</div>
+
+{/* PASTE HERE */}
+
+<div className="mt-5">
+  <p className="text-sm text-gray-400 mb-2">Audio</p>
+
+  <div className="flex flex-wrap gap-3">
+    <button
+      onClick={() => {
+        setSelectedServer((prev) => ({
+          ...prev,
+          type: "sub",
+        }));
+        setReloadKey((prev) => prev + 1);
+        setStream(null);
+        setIframeLoaded(false);
+      }}
+      className={`px-5 py-2 rounded-xl border transition ${
+        selectedServer.type === "sub"
+          ? "bg-white text-black border-white"
+          : "bg-white/10 text-white border-white/10 hover:bg-white/15"
+      }`}
+    >
+      SUB
+    </button>
+
+    <button
+      onClick={() => {
+        setSelectedServer((prev) => ({
+          ...prev,
+          type: "dub",
+        }));
+        setReloadKey((prev) => prev + 1);
+        setStream(null);
+        setIframeLoaded(false);
+      }}
+      className={`px-5 py-2 rounded-xl border transition ${
+        selectedServer.type === "dub"
+          ? "bg-white text-black border-white"
+          : "bg-white/10 text-white border-white/10 hover:bg-white/15"
+      }`}
+    >
+      DUB
+    </button>
+  </div>
+</div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <PremiumBannerAd />
               <PremiumBannerAd />
