@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
   faClosedCaptioning,
-  faMicrophone,
   faPlay,
   faRotateRight,
   faHeart,
@@ -12,12 +11,25 @@ import {
 
 import fetchAnimeInfo from "@/src/utils/getAnimeInfo.utils";
 import getEpisodes from "@/src/utils/getEpisodes.utils";
-import getServers from "@/src/utils/getServers.utils";
 import getStreamInfo from "@/src/utils/getStreamInfo.utils";
 import { createAnimeSlug, getAnimeIdFromSlug } from "@/src/utils/slug.utils";
 
-const ANIMEPAHE_API = "https://anime-streaming-system-1.onrender.com";
 const EPISODES_PER_RANGE = 100;
+
+const DEFAULT_SERVERS = [
+  {
+    id: "server-1",
+    name: "Server 1",
+    provider: "megaplay-mal",
+    type: "sub",
+  },
+  {
+    id: "server-2",
+    name: "Server 2",
+    provider: "megaplay-anilist",
+    type: "sub",
+  },
+];
 
 function PremiumBannerAd() {
   const adRef = useRef(null);
@@ -50,7 +62,9 @@ function PremiumBannerAd() {
           Sponsored
         </span>
 
-        <span className="text-[10px] text-zinc-500">Support OFFANIME</span>
+        <span className="text-[10px] text-zinc-500">
+          Support OFFANIME
+        </span>
       </div>
 
       <div
@@ -76,16 +90,10 @@ export default function Watch() {
   const [episodes, setEpisodes] = useState([]);
   const [episodesLoading, setEpisodesLoading] = useState(true);
   const [episode, setEpisode] = useState(initialEp);
-  const [servers, setServers] = useState([]);
+  const [servers] = useState(DEFAULT_SERVERS);
 
-  const [selectedServer, setSelectedServer] = useState({
-    id: "animepahe-sub",
-    name: "AnimePahe",
-    provider: "animepahe",
-    type: "sub",
-  });
+  const [selectedServer, setSelectedServer] = useState(DEFAULT_SERVERS[0]);
 
-  const [selectedQuality, setSelectedQuality] = useState("720p");
   const [stream, setStream] = useState(null);
   const [loading, setLoading] = useState(true);
   const [streamLoading, setStreamLoading] = useState(false);
@@ -110,6 +118,15 @@ export default function Watch() {
   const correctSlug = anime
     ? createAnimeSlug(title, anime.id || animeId)
     : animeSlug;
+
+  const malId =
+    anime?.malId ||
+    anime?.idMal ||
+    anime?.mal_id ||
+    anime?.mappings?.mal ||
+    anime?.mappings?.malId ||
+    anime?.externalIds?.mal ||
+    null;
 
   const getEpisodeNumber = (ep) => {
     const n =
@@ -215,10 +232,7 @@ export default function Watch() {
       setEpisodesLoading(true);
 
       try {
-        const [animeRes, serverRes] = await Promise.all([
-          fetchAnimeInfo(animeId),
-          getServers(),
-        ]);
+        const animeRes = await fetchAnimeInfo(animeId);
 
         if (!alive) return;
 
@@ -230,20 +244,6 @@ export default function Watch() {
           null;
 
         setAnime(cleanAnime);
-
-        const fallbackServers = [
-          { id: "megaplay-sub", name: "MegaPlay", provider: "megaplay", type: "sub" },
-          { id: "megaplay-dub", name: "MegaPlay", provider: "megaplay", type: "dub" },
-          { id: "animepahe-sub", name: "AnimePahe", provider: "animepahe", type: "sub" },
-          { id: "animepahe-dub", name: "AnimePahe", provider: "animepahe", type: "dub" },
-        ];
-
-        setServers(
-          Array.isArray(serverRes) && serverRes.length
-            ? serverRes
-            : fallbackServers
-        );
-
         setLoading(false);
 
         getEpisodes(animeId)
@@ -271,14 +271,6 @@ export default function Watch() {
         setAnime(null);
         setEpisodes([]);
         setEpisodesLoading(false);
-
-        setServers([
-          { id: "megaplay-sub", name: "MegaPlay", provider: "megaplay", type: "sub" },
-          { id: "megaplay-dub", name: "MegaPlay", provider: "megaplay", type: "dub" },
-          { id: "animepahe-sub", name: "AnimePahe", provider: "animepahe", type: "sub" },
-          { id: "animepahe-dub", name: "AnimePahe", provider: "animepahe", type: "dub" },
-        ]);
-
         setLoading(false);
       }
     }
@@ -340,29 +332,11 @@ export default function Watch() {
     }
   }, [loading, animeId, episode]);
 
-  async function loadAnimePaheStream() {
-    const audio = selectedServer.type === "dub" ? "dub" : "sub";
-
-    const res = await fetch(
-      `${ANIMEPAHE_API}/watch?anilistId=${animeId}&ep=${episode}&audio=${audio}`
-    );
-
-    const json = await res.json();
-
-    if (json?.error) throw new Error(json.error);
-
-    return {
-      provider: "animepahe",
-      type: audio,
-      raw: json,
-    };
-  }
-
   useEffect(() => {
     let alive = true;
 
     async function loadStream() {
-      if (!animeId || !episode || loading) return;
+      if (!animeId || !episode || loading || !anime) return;
       if (!allowPlayer) return;
 
       setStreamLoading(true);
@@ -370,19 +344,18 @@ export default function Watch() {
       setStream(null);
 
       try {
-        let data;
+        const streamId =
+          selectedServer.provider === "megaplay-mal"
+            ? malId || animeId
+            : animeId;
 
-        if (selectedServer.provider === "animepahe") {
-          data = await loadAnimePaheStream();
-        } else {
-          data = await getStreamInfo(
-            animeId,
-            episode,
-            selectedServer.provider,
-            selectedServer.type,
-            title
-          );
-        }
+        const data = await getStreamInfo(
+          streamId,
+          episode,
+          "megaplay",
+          selectedServer.type,
+          title
+        );
 
         if (!alive) return;
 
@@ -391,7 +364,14 @@ export default function Watch() {
         navigate(`/watch/${correctSlug}?ep=${episode}`, { replace: true });
       } catch (err) {
         console.error("Stream load error:", err);
-        setStream(null);
+
+        if (!alive) return;
+
+        if (selectedServer.provider === "megaplay-mal") {
+          setSelectedServer(DEFAULT_SERVERS[1]);
+        } else {
+          setStream(null);
+        }
       } finally {
         if (alive) setStreamLoading(false);
       }
@@ -403,7 +383,9 @@ export default function Watch() {
       alive = false;
     };
   }, [
+    anime,
     animeId,
+    malId,
     episode,
     selectedServer,
     title,
@@ -431,7 +413,8 @@ export default function Watch() {
     setIframeLoaded(false);
 
     const correctRangeIndex = ranges.findIndex(
-      (range) => Number(epNumber) >= range.start && Number(epNumber) <= range.end
+      (range) =>
+        Number(epNumber) >= range.start && Number(epNumber) <= range.end
     );
 
     if (correctRangeIndex !== -1) setEpisodeRange(correctRangeIndex);
@@ -459,59 +442,11 @@ export default function Watch() {
     }
   };
 
-  const animePaheQualitySections = useMemo(() => {
-    if (stream?.provider !== "animepahe") return [];
-
-    const audio = selectedServer.type === "dub";
-    const allStreams =
-      stream?.raw?.streams?.all || stream?.raw?.selected?.streams || [];
-
-    const filtered = allStreams.filter((item) => {
-      const isDub = item?.original?.isDub === true;
-      return audio ? isDub : !isDub;
-    });
-
-    const qualityOrder = ["360p", "720p", "1080p"];
-
-    return qualityOrder
-      .map((quality) => {
-        const found = filtered.find((x) => x.quality === quality);
-        if (!found) return null;
-
-        return {
-          quality,
-          label: `Kiwi-Stream-${quality}`,
-          embed: found?.original?.embed,
-          url: found?.url,
-          rawUrl: found?.rawUrl,
-          item: found,
-        };
-      })
-      .filter(Boolean);
-  }, [stream, selectedServer.type]);
-
-  const selectedAnimePaheSource = useMemo(() => {
-    if (stream?.provider !== "animepahe") return null;
-
-    return (
-      animePaheQualitySections.find((x) => x.quality === selectedQuality) ||
-      animePaheQualitySections.find((x) => x.quality === "720p") ||
-      animePaheQualitySections[0] ||
-      null
-    );
-  }, [stream, animePaheQualitySections, selectedQuality]);
-
   const iframeUrl = useMemo(() => {
-    if (stream?.provider === "animepahe") {
-      const embed = selectedAnimePaheSource?.embed;
-      if (!embed) return "";
-      return `${embed}${embed.includes("?") ? "&" : "?"}reload=${reloadKey}`;
-    }
-
     const normalUrl = stream?.url || stream?.embed || "";
     if (!normalUrl) return "";
     return `${normalUrl}${normalUrl.includes("?") ? "&" : "?"}reload=${reloadKey}`;
-  }, [stream, selectedAnimePaheSource, reloadKey]);
+  }, [stream, reloadKey]);
 
   if (loading) {
     return (
@@ -542,7 +477,10 @@ export default function Watch() {
                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md px-4 py-6 overflow-y-auto">
                   <div className="w-full max-w-[520px] text-center my-auto">
                     <div className="mx-auto mb-4 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-white text-black shadow-2xl">
-                      <FontAwesomeIcon icon={faHeart} className="text-lg sm:text-xl" />
+                      <FontAwesomeIcon
+                        icon={faHeart}
+                        className="text-lg sm:text-xl"
+                      />
                     </div>
 
                     <h2 className="text-2xl sm:text-4xl font-extrabold text-white mb-3 sm:mb-5 leading-tight">
@@ -587,7 +525,7 @@ export default function Watch() {
 
               {iframeUrl && !showSupportLayer ? (
                 <iframe
-                  key={`${animeId}-${episode}-${selectedServer.id}-${selectedQuality}-${reloadKey}`}
+                  key={`${animeId}-${episode}-${selectedServer.id}-${reloadKey}`}
                   src={iframeUrl}
                   title={`${title} Episode ${episode}`}
                   className="w-full h-full bg-black"
@@ -655,7 +593,6 @@ export default function Watch() {
                         key={server.id}
                         onClick={() => {
                           setSelectedServer(server);
-                          setSelectedQuality("720p");
                           setReloadKey((prev) => prev + 1);
                           setStream(null);
                           setIframeLoaded(false);
@@ -675,58 +612,15 @@ export default function Watch() {
                         }`}
                       >
                         <FontAwesomeIcon
-                          icon={
-                            server.type === "dub"
-                              ? faMicrophone
-                              : faClosedCaptioning
-                          }
+                          icon={faClosedCaptioning}
                           className="mr-2"
                         />
-                        {server.name} {server.type.toUpperCase()}
+                        {server.name}
                       </button>
                     );
                   })}
                 </div>
               </div>
-
-              {selectedServer.provider === "animepahe" && (
-                <div className="mt-5">
-                  <p className="text-sm text-gray-400 mb-2">
-                    {selectedServer.type.toUpperCase()} Quality
-                  </p>
-
-                  <div className="flex flex-wrap gap-3">
-                    {animePaheQualitySections.length === 0 ? (
-                      <p className="text-gray-500 text-sm">
-                        No AnimePahe quality found.
-                      </p>
-                    ) : (
-                      animePaheQualitySections.map((section) => {
-                        const isActive = selectedQuality === section.quality;
-
-                        return (
-                          <button
-                            key={section.quality}
-                            onClick={() => {
-                              setSelectedQuality(section.quality);
-                              setIframeLoaded(false);
-                              setReloadKey((prev) => prev + 1);
-                            }}
-                            className={`px-4 py-2 rounded-xl border text-sm font-semibold transition ${
-                              isActive
-                                ? "bg-white text-black border-white"
-                                : "bg-white/10 text-white border-white/10 hover:bg-white/15"
-                            }`}
-                          >
-                            <FontAwesomeIcon icon={faPlay} className="mr-2 text-xs" />
-                            {section.label}
-                          </button>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -755,10 +649,15 @@ export default function Watch() {
                       className="min-w-[120px] flex items-center justify-between gap-3 bg-[#1b1b1b] border border-white/10 hover:border-white/25 hover:bg-white/10 rounded-xl px-4 py-2 text-sm font-semibold text-white transition"
                     >
                       <span>
-                        {ranges[episodeRange]?.start}-{ranges[episodeRange]?.end}
+                        {ranges[episodeRange]?.start}-
+                        {ranges[episodeRange]?.end}
                       </span>
 
-                      <span className={`transition ${rangeOpen ? "rotate-180" : ""}`}>
+                      <span
+                        className={`transition ${
+                          rangeOpen ? "rotate-180" : ""
+                        }`}
+                      >
                         ▼
                       </span>
                     </button>
@@ -795,7 +694,9 @@ export default function Watch() {
 
             <div className="max-h-[720px] overflow-y-auto p-4 grid grid-cols-3 gap-2">
               {episodesLoading ? (
-                <p className="text-gray-400 col-span-3">Loading episodes...</p>
+                <p className="text-gray-400 col-span-3">
+                  Loading episodes...
+                </p>
               ) : visibleEpisodes.length === 0 ? (
                 <p className="text-gray-400 col-span-3">No episodes found.</p>
               ) : (
