@@ -14,16 +14,47 @@ function normalizeForTheme(item = {}) {
   const poster = item.poster || item.image || "";
   const banner = item.banner || poster;
 
+  const malId =
+    item.malId ||
+    item.idMal ||
+    item.mal_id ||
+    item.malID ||
+    item.mappings?.mal ||
+    item.mappings?.malId ||
+    item.externalIds?.mal ||
+    item.externalIds?.malId ||
+    item.ids?.mal ||
+    item.ids?.malId ||
+    null;
+
   return {
     id: item.id,
     anilistId: item.anilistId || item.id,
+
+    malId,
+    idMal: malId,
+    mal_id: malId,
+    malID: malId,
+
     title,
     name: title,
     animeTitle: title,
     japanese_title: item.japaneseTitle || "",
+
     poster,
     image: poster,
     banner,
+
+    description: cleanText(item.description),
+    genres: item.genres || [],
+    status: item.status || "",
+    type: item.type || "TV",
+    duration: item.duration || "",
+    season: item.season || "",
+    year: item.year || "",
+    studios: item.studios || [],
+    score: item.score || "",
+    episodes: item.episodes || item.totalEpisodes || null,
 
     animeInfo: {
       Overview: cleanText(item.description),
@@ -73,7 +104,14 @@ export default async function fetchAnimeInfo(id, random = false) {
       timeout: 30000,
     });
 
-    const normalized = normalizeForTheme(response.data);
+    const raw =
+      response.data?.data ||
+      response.data?.results ||
+      response.data?.anime ||
+      response.data ||
+      {};
+
+    const normalized = normalizeForTheme(raw);
 
     return {
       data: normalized,
