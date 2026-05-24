@@ -12,13 +12,9 @@ export default async function getStreamInfo(
 
   const base = megaplay.replace(/\/$/, "");
 
-  let url = "";
+  const idType = provider === "megaplay-mal" ? "mal" : "anilist";
 
-  if (provider === "megaplay-mal") {
-    url = `${base}/watch/${animeId}?ep=${episodeId}&lang=${lang}&idType=mal`;
-  } else {
-    url = `${base}/watch/${animeId}?ep=${episodeId}&lang=${lang}&idType=anilist`;
-  }
+  const url = `${base}/watch/${animeId}?ep=${episodeId}&lang=${lang}&idType=${idType}`;
 
   return {
     provider,
@@ -27,5 +23,6 @@ export default async function getStreamInfo(
     title,
     url,
     embed: url,
+    idType,
   };
 }
