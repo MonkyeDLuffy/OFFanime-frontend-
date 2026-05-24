@@ -20,13 +20,13 @@ const DEFAULT_SERVERS = [
   {
     id: "server-1",
     name: "Server 1",
-    provider: "megaplay-mal",
+    provider: "megaplay-anilist",
     type: "sub",
   },
   {
     id: "server-2",
     name: "Server 2",
-    provider: "megaplay-anilist",
+    provider: "megaplay-mal",
     type: "sub",
   },
 ];
@@ -91,7 +91,6 @@ export default function Watch() {
   const [episodesLoading, setEpisodesLoading] = useState(true);
   const [episode, setEpisode] = useState(initialEp);
   const [servers] = useState(DEFAULT_SERVERS);
-
   const [selectedServer, setSelectedServer] = useState(DEFAULT_SERVERS[0]);
 
   const [stream, setStream] = useState(null);
@@ -119,13 +118,17 @@ export default function Watch() {
     ? createAnimeSlug(title, anime.id || animeId)
     : animeSlug;
 
-  const malId =
+  const finalMalId =
     anime?.malId ||
-    anime?.idMal ||
+    anime?.malID ||
     anime?.mal_id ||
+    anime?.idMal ||
     anime?.mappings?.mal ||
     anime?.mappings?.malId ||
     anime?.externalIds?.mal ||
+    anime?.externalIds?.malId ||
+    anime?.ids?.mal ||
+    anime?.ids?.malId ||
     null;
 
   const getEpisodeNumber = (ep) => {
@@ -346,7 +349,7 @@ export default function Watch() {
       try {
         const streamId =
           selectedServer.provider === "megaplay-mal"
-            ? malId || animeId
+            ? finalMalId || animeId
             : animeId;
 
         const data = await getStreamInfo(
@@ -367,8 +370,10 @@ export default function Watch() {
 
         if (!alive) return;
 
-        if (selectedServer.provider === "megaplay-mal") {
+        if (selectedServer.provider === "megaplay-anilist" && finalMalId) {
           setSelectedServer(DEFAULT_SERVERS[1]);
+        } else if (selectedServer.provider === "megaplay-mal") {
+          setSelectedServer(DEFAULT_SERVERS[0]);
         } else {
           setStream(null);
         }
@@ -385,7 +390,7 @@ export default function Watch() {
   }, [
     anime,
     animeId,
-    malId,
+    finalMalId,
     episode,
     selectedServer,
     title,
