@@ -600,93 +600,83 @@ useEffect(() => {
               </div>
 
               <div className="mt-5">
-                <p className="text-sm text-gray-400 mb-2">Servers</p>
+  <p className="text-sm text-gray-400 mb-3">Playback</p>
 
-                <div className="flex flex-wrap gap-3">
-                  {servers.map((server) => {
-                    const isActive = selectedServer.id === server.id;
+  <div className="flex flex-wrap items-end gap-4">
+    {/* Servers */}
+    <div>
+      <p className="text-xs text-gray-500 mb-2">Servers</p>
 
-                    return (
-                      <button
-                        key={server.id}
-                        onClick={() => {
-                          setSelectedServer(server);
-                          setReloadKey((prev) => prev + 1);
-                          setStream(null);
-                          setIframeLoaded(false);
+      <div className="flex flex-wrap gap-3">
+        {servers.map((server) => {
+          const isActive = selectedServer.id === server.id;
 
-                          if (shouldShowSupportLayer()) {
-                            setAllowPlayer(false);
-                            setShowSupportLayer(true);
-                          } else {
-                            setAllowPlayer(true);
-                            setShowSupportLayer(false);
-                          }
-                        }}
-                        className={`px-4 sm:px-5 py-2 rounded-xl border transition ${
-                          isActive
-                            ? "bg-white text-black border-white"
-                            : "bg-white/10 text-white border-white/10 hover:bg-white/15"
-                        }`}
-                      >
-                        <FontAwesomeIcon
-                          icon={faClosedCaptioning}
-                          className="mr-2"
-                        />
-                        {server.name}
-                      </button>
-                    );
-                  })}
+          return (
+            <button
+              key={server.id}
+              onClick={() => {
+                setSelectedServer((prev) => ({
+                  ...server,
+                  type: prev.type,
+                }));
 
- <div className="mt-5">
-  <p className="text-sm text-gray-400 mb-2">Audio</p>
+                setReloadKey((prev) => prev + 1);
+                setStream(null);
+                setIframeLoaded(false);
 
-  <div className="flex flex-wrap gap-3">
-    <button
-      onClick={() => {
-        setSelectedServer((prev) => ({
-          ...prev,
-          type: "sub",
-        }));
+                if (shouldShowSupportLayer()) {
+                  setAllowPlayer(false);
+                  setShowSupportLayer(true);
+                } else {
+                  setAllowPlayer(true);
+                  setShowSupportLayer(false);
+                }
+              }}
+              className={`px-4 sm:px-5 py-2 rounded-xl border transition ${
+                isActive
+                  ? "bg-white text-black border-white"
+                  : "bg-white/10 text-white border-white/10 hover:bg-white/15"
+              }`}
+            >
+              <FontAwesomeIcon icon={faClosedCaptioning} className="mr-2" />
+              {server.name}
+            </button>
+          );
+        })}
+      </div>
+    </div>
 
-        setReloadKey((prev) => prev + 1);
-        setStream(null);
-        setIframeLoaded(false);
-      }}
-      className={`px-4 sm:px-5 py-2 rounded-xl border transition ${
-        selectedServer.type === "sub"
-          ? "bg-white text-black border-white"
-          : "bg-white/10 text-white border-white/10 hover:bg-white/15"
-      }`}
-    >
-      SUB
-    </button>
+    {/* Audio */}
+    <div>
+      <p className="text-xs text-gray-500 mb-2">Audio</p>
 
-    <button
-      onClick={() => {
-        setSelectedServer((prev) => ({
-          ...prev,
-          type: "dub",
-        }));
+      <div className="flex flex-wrap gap-3">
+        {["sub", "dub"].map((audioType) => (
+          <button
+            key={audioType}
+            onClick={() => {
+              setSelectedServer((prev) => ({
+                ...prev,
+                type: audioType,
+              }));
 
-        setReloadKey((prev) => prev + 1);
-        setStream(null);
-        setIframeLoaded(false);
-      }}
-      className={`px-4 sm:px-5 py-2 rounded-xl border transition ${
-        selectedServer.type === "dub"
-          ? "bg-white text-black border-white"
-          : "bg-white/10 text-white border-white/10 hover:bg-white/15"
-      }`}
-    >
-      DUB
-    </button>
+              setReloadKey((prev) => prev + 1);
+              setStream(null);
+              setIframeLoaded(false);
+            }}
+            className={`px-4 sm:px-5 py-2 rounded-xl border transition ${
+              selectedServer.type === audioType
+                ? "bg-white text-black border-white"
+                : "bg-white/10 text-white border-white/10 hover:bg-white/15"
+            }`}
+          >
+            {audioType.toUpperCase()}
+          </button>
+        ))}
+      </div>
+    </div>
   </div>
 </div>
-                  
-                </div>
-              </div>
-            </div>
 
         
 
