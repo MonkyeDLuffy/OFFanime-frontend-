@@ -28,49 +28,53 @@ function PremiumBannerAd() {
   const adRef = useRef(null);
 
   useEffect(() => {
-    if (!adRef.current) return;
+    const timer = setTimeout(() => {
+      if (!adRef.current) return;
 
-    adRef.current.innerHTML = "";
+      adRef.current.innerHTML = "";
 
-    window.atOptions = {
-      key: "fa18fe18755cc0b110e4155f955a4c3e",
-      format: "iframe",
-      height: 50,
-      width: 320,
-      params: {},
-    };
+      window.atOptions = {
+        key: "fa18fe18755cc0b110e4155f955a4c3e",
+        format: "iframe",
+        height: 50,
+        width: 320,
+        params: {},
+      };
 
-    const script = document.createElement("script");
-    script.src =
-      "https://www.highperformanceformat.com/fa18fe18755cc0b110e4155f955a4c3e/invoke.js";
-    script.async = true;
+      const script = document.createElement("script");
+      script.src =
+        "https://www.highperformanceformat.com/fa18fe18755cc0b110e4155f955a4c3e/invoke.js";
+      script.async = true;
 
-    adRef.current.appendChild(script);
+      adRef.current.appendChild(script);
+    }, 800);
+
+    return () => clearTimeout(timer);
   }, []);
 
   return (
-    <div className="hidden lg:block w-fit">
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#111111] via-[#161616] to-[#0b0b0b] shadow-[0_0_25px_rgba(255,255,255,0.04)] backdrop-blur-xl p-3">
-        <div className="absolute inset-0 bg-white/[0.02] pointer-events-none" />
+    <div className="hidden lg:block w-full max-w-[430px]">
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-r from-[#101010] via-[#181818] to-[#101010] p-3 shadow-[0_0_25px_rgba(255,255,255,0.03)]">
+        <div className="absolute inset-0 bg-gradient-to-r from-white/[0.03] via-transparent to-white/[0.03] pointer-events-none" />
 
-        <div className="flex items-center justify-between mb-2">
+        <div className="relative flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-white/60 animate-pulse" />
 
-            <span className="text-[10px] uppercase tracking-[0.25em] text-zinc-400 font-semibold">
+            <span className="text-[10px] uppercase tracking-[0.22em] text-zinc-400 font-semibold">
               Sponsored
             </span>
           </div>
 
-          <span className="text-[9px] text-zinc-500">
-            Support OFFANIME
-          </span>
+          <span className="text-[9px] text-zinc-500">Support OFFANIME</span>
         </div>
 
-        <div
-          ref={adRef}
-          className="w-[320px] h-[50px] overflow-hidden rounded-xl border border-white/5 bg-black/40 flex items-center justify-center"
-        />
+        <div className="relative w-full flex justify-center">
+          <div
+            ref={adRef}
+            className="w-[320px] h-[50px] overflow-hidden rounded-xl border border-white/5 bg-black/30"
+          />
+        </div>
       </div>
     </div>
   );
@@ -282,7 +286,7 @@ export default function AnimeInfo() {
       />
 
       <div className="max-w-7xl mx-auto px-6 pb-16">
-        <div className="mt-8 border-b border-white/10 flex items-center justify-between gap-6">
+        <div className="mt-8 border-b border-white/10 grid grid-cols-[1fr_430px] gap-6 items-end max-lg:block">
           <div className="flex gap-8 overflow-x-auto">
             {TABS.map((tab) => (
               <button
@@ -299,7 +303,7 @@ export default function AnimeInfo() {
             ))}
           </div>
 
-          <div className="pb-4 shrink-0">
+          <div className="pb-4 w-full flex justify-end">
             <PremiumBannerAd />
           </div>
         </div>
