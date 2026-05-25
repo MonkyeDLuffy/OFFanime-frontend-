@@ -637,11 +637,8 @@ useEffect(() => {
                       </button>
                     );
                   })}
-                </div>
-              </div>
-            </div>
 
-           <div className="mt-5">
+ <div className="mt-5">
   <p className="text-sm text-gray-400 mb-2">Audio</p>
 
   <div className="flex flex-wrap gap-3">
@@ -686,6 +683,12 @@ useEffect(() => {
     </button>
   </div>
 </div>
+                  
+                </div>
+              </div>
+            </div>
+
+        
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <PremiumBannerAd />
