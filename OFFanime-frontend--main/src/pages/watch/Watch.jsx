@@ -641,15 +641,7 @@ useEffect(() => {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3">
-  {servers.map((server) => {
-    ...
-  })}
-</div>
-
-{/* PASTE HERE */}
-
-<div className="mt-5">
+           <div className="mt-5">
   <p className="text-sm text-gray-400 mb-2">Audio</p>
 
   <div className="flex flex-wrap gap-3">
@@ -659,11 +651,12 @@ useEffect(() => {
           ...prev,
           type: "sub",
         }));
+
         setReloadKey((prev) => prev + 1);
         setStream(null);
         setIframeLoaded(false);
       }}
-      className={`px-5 py-2 rounded-xl border transition ${
+      className={`px-4 sm:px-5 py-2 rounded-xl border transition ${
         selectedServer.type === "sub"
           ? "bg-white text-black border-white"
           : "bg-white/10 text-white border-white/10 hover:bg-white/15"
@@ -678,11 +671,12 @@ useEffect(() => {
           ...prev,
           type: "dub",
         }));
+
         setReloadKey((prev) => prev + 1);
         setStream(null);
         setIframeLoaded(false);
       }}
-      className={`px-5 py-2 rounded-xl border transition ${
+      className={`px-4 sm:px-5 py-2 rounded-xl border transition ${
         selectedServer.type === "dub"
           ? "bg-white text-black border-white"
           : "bg-white/10 text-white border-white/10 hover:bg-white/15"
