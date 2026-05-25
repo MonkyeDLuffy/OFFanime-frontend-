@@ -261,3 +261,36 @@ body::-webkit-scrollbar {
 .scrollbar-visible::-webkit-scrollbar-corner {
   background-color: transparent;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+iframe,
+video {
+  content-visibility: auto;
+}
+
+img {
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.blur-heavy,
+.backdrop-blur-xl,
+.backdrop-blur-2xl,
+.backdrop-blur-3xl {
+  backdrop-filter: blur(8px) !important;
+}
