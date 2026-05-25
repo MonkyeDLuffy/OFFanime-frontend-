@@ -31,6 +31,13 @@ const DEFAULT_SERVERS = [
   },
 ];
 
+function cleanDescription(text = "") {
+  return String(text)
+    .replace(/<[^>]*>/g, "")
+    .replace(/\n/g, " ")
+    .trim();
+}
+
 function PremiumBannerAd() {
   const adRef = useRef(null);
 
@@ -61,7 +68,6 @@ function PremiumBannerAd() {
         <span className="text-[11px] uppercase tracking-[0.25em] text-zinc-400 font-semibold">
           Sponsored
         </span>
-
         <span className="text-[10px] text-zinc-500">Support OFFANIME</span>
       </div>
 
@@ -69,6 +75,138 @@ function PremiumBannerAd() {
         ref={adRef}
         className="w-[320px] h-[50px] max-w-full overflow-hidden rounded-xl border border-white/5 bg-black/40 mx-auto"
       />
+    </div>
+  );
+}
+
+function AnimeInfoCard({ anime, title, episode }) {
+  if (!anime) {
+    return (
+      <div className="bg-[#121212] border border-white/10 rounded-2xl overflow-hidden h-fit animate-pulse">
+        <div className="h-[160px] bg-white/5" />
+        <div className="p-4 space-y-3">
+          <div className="h-5 bg-white/10 rounded w-2/3" />
+          <div className="h-4 bg-white/10 rounded w-1/2" />
+          <div className="h-20 bg-white/10 rounded" />
+        </div>
+      </div>
+    );
+  }
+
+  const poster =
+    anime.poster ||
+    anime.image ||
+    anime.coverImage?.extraLarge ||
+    anime.coverImage?.large ||
+    anime.coverImage ||
+    "";
+
+  const banner = anime.banner || anime.cover || anime.background || poster;
+
+  const description = cleanDescription(
+    anime.description || anime.animeInfo?.Overview || "No description available."
+  );
+
+  const genres = anime.genres || anime.animeInfo?.Genres || [];
+  const status = anime.status || anime.animeInfo?.Status || "";
+  const type = anime.type || anime.animeInfo?.Type || "TV";
+  const year = anime.year || anime.animeInfo?.Aired || "";
+  const studios = anime.studios || anime.animeInfo?.Studios || [];
+
+  return (
+    <div className="bg-[#121212] border border-white/10 rounded-2xl overflow-hidden h-fit">
+      <div className="relative h-[165px] bg-black">
+        {banner && (
+          <img
+            src={banner}
+            alt={title}
+            className="w-full h-full object-cover opacity-55"
+            loading="lazy"
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-black/45 to-transparent" />
+      </div>
+
+      <div className="p-4 -mt-16 relative z-10">
+        <div className="flex gap-4">
+          {poster && (
+            <img
+              src={poster}
+              alt={title}
+              className="w-[95px] h-[135px] object-cover rounded-xl border border-white/10 shadow-2xl"
+              loading="lazy"
+            />
+          )}
+
+          <div className="pt-14 min-w-0">
+            <h3 className="text-white font-extrabold text-lg leading-tight line-clamp-2">
+              {title}
+            </h3>
+
+            <p className="text-zinc-400 text-sm mt-1">Episode {episode}</p>
+
+            <div className="flex flex-wrap gap-2 mt-3">
+              {status && (
+                <span className="px-2 py-1 rounded-full bg-green-500/15 text-green-400 text-xs font-semibold">
+                  {status}
+                </span>
+              )}
+              {type && (
+                <span className="px-2 py-1 rounded-full bg-white/10 text-zinc-300 text-xs">
+                  {type}
+                </span>
+              )}
+              {year && (
+                <span className="px-2 py-1 rounded-full bg-white/10 text-zinc-300 text-xs">
+                  {year}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {genres.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-5">
+            {genres.slice(0, 5).map((genre) => (
+              <span
+                key={genre}
+                className="px-3 py-1 rounded-full bg-white text-black text-xs font-bold"
+              >
+                {genre}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <p className="text-zinc-400 text-sm leading-relaxed mt-5 line-clamp-5">
+          {description}
+        </p>
+
+        <div className="mt-5 border-t border-white/10 pt-4 space-y-3 text-sm">
+          {studios?.length > 0 && (
+            <div className="flex justify-between gap-4">
+              <span className="text-zinc-500">Studio</span>
+              <span className="text-white text-right font-semibold">
+                {Array.isArray(studios) ? studios.join(", ") : studios}
+              </span>
+            </div>
+          )}
+
+          {status && (
+            <div className="flex justify-between gap-4">
+              <span className="text-zinc-500">Status</span>
+              <span className="text-white font-semibold">{status}</span>
+            </div>
+          )}
+
+          {type && (
+            <div className="flex justify-between gap-4">
+              <span className="text-zinc-500">Type</span>
+              <span className="text-white font-semibold">{type}</span>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -92,7 +230,7 @@ export default function Watch() {
   const [selectedServer, setSelectedServer] = useState(DEFAULT_SERVERS[0]);
 
   const [stream, setStream] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(false);
   const [streamLoading, setStreamLoading] = useState(false);
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
@@ -170,6 +308,19 @@ export default function Watch() {
     });
   }, [sortedEpisodes, ranges, episodeRange]);
 
+  const shouldShowSupportLayer = () => {
+    const lastShown = Number(localStorage.getItem("supportLayerLastShown") || 0);
+    return Date.now() - lastShown > SUPPORT_COOLDOWN;
+  };
+
+  useEffect(() => {
+    if (!query.get("ep")) {
+      navigate(`/watch/${animeSlug}?ep=1`, { replace: true });
+    } else {
+      setEpisode(query.get("ep"));
+    }
+  }, [animeSlug, location.search, navigate]);
+
   useEffect(() => {
     if (!ranges.length || !episode) return;
 
@@ -182,6 +333,87 @@ export default function Watch() {
       setEpisodeRange(correctRangeIndex);
     }
   }, [episode, ranges]);
+
+  useEffect(() => {
+    let alive = true;
+
+    async function loadFastPageData() {
+      if (!animeId) return;
+
+      setPageLoading(true);
+      setEpisodesLoading(true);
+
+      const animePromise = fetchAnimeInfo(animeId);
+      const episodesPromise = getEpisodes(animeId);
+
+      animePromise
+        .then((animeRes) => {
+          if (!alive) return;
+
+          const cleanAnime =
+            animeRes?.results ||
+            animeRes?.data ||
+            animeRes?.anime ||
+            animeRes ||
+            null;
+
+          setAnime(cleanAnime);
+        })
+        .catch((err) => {
+          console.error("Anime info load error:", err);
+          if (alive) setAnime(null);
+        })
+        .finally(() => {
+          if (alive) setPageLoading(false);
+        });
+
+      episodesPromise
+        .then((episodeRes) => {
+          if (!alive) return;
+
+          const cleanEpisodes = Array.isArray(episodeRes)
+            ? episodeRes
+            : episodeRes?.results || episodeRes?.episodes || [];
+
+          setEpisodes(Array.isArray(cleanEpisodes) ? cleanEpisodes : []);
+        })
+        .catch((err) => {
+          console.error("Episodes load error:", err);
+          if (alive) setEpisodes([]);
+        })
+        .finally(() => {
+          if (alive) setEpisodesLoading(false);
+        });
+    }
+
+    loadFastPageData();
+
+    return () => {
+      alive = false;
+    };
+  }, [animeId]);
+
+  useEffect(() => {
+    if (!anime) return;
+
+    const currentEp = query.get("ep") || "1";
+
+    if (animeSlug !== correctSlug) {
+      navigate(`/watch/${correctSlug}?ep=${currentEp}`, { replace: true });
+    }
+  }, [anime, animeSlug, correctSlug, location.search, navigate]);
+
+  useEffect(() => {
+    if (!pageLoading) {
+      if (shouldShowSupportLayer()) {
+        setAllowPlayer(false);
+        setShowSupportLayer(true);
+      } else {
+        setAllowPlayer(true);
+        setShowSupportLayer(false);
+      }
+    }
+  }, [pageLoading, animeId, episode]);
 
   useEffect(() => {
     if (!anime || !episode) return;
@@ -216,88 +448,6 @@ export default function Watch() {
     );
   }, [anime, animeId, episode, title]);
 
-  useEffect(() => {
-    if (!query.get("ep")) {
-      navigate(`/watch/${animeSlug}?ep=1`, { replace: true });
-    } else {
-      setEpisode(query.get("ep"));
-    }
-  }, [animeSlug, location.search, navigate]);
-
-  useEffect(() => {
-    let alive = true;
-
-    async function loadPage() {
-      setLoading(true);
-      setEpisodes([]);
-      setEpisodesLoading(true);
-
-      try {
-        const animeRes = await fetchAnimeInfo(animeId);
-
-        if (!alive) return;
-
-        const cleanAnime =
-          animeRes?.results ||
-          animeRes?.data ||
-          animeRes?.anime ||
-          animeRes ||
-          null;
-
-        setAnime(cleanAnime);
-        setLoading(false);
-
-        getEpisodes(animeId)
-          .then((episodeRes) => {
-            if (!alive) return;
-
-            const cleanEpisodes = Array.isArray(episodeRes)
-              ? episodeRes
-              : episodeRes?.results || episodeRes?.episodes || [];
-
-            setEpisodes(Array.isArray(cleanEpisodes) ? cleanEpisodes : []);
-          })
-          .catch((err) => {
-            console.error("Episodes load error:", err);
-            if (alive) setEpisodes([]);
-          })
-          .finally(() => {
-            if (alive) setEpisodesLoading(false);
-          });
-      } catch (err) {
-        console.error("Watch page load error:", err);
-
-        if (!alive) return;
-
-        setAnime(null);
-        setEpisodes([]);
-        setEpisodesLoading(false);
-        setLoading(false);
-      }
-    }
-
-    if (animeId) loadPage();
-
-    return () => {
-      alive = false;
-    };
-  }, [animeId]);
-
-  useEffect(() => {
-    if (!anime) return;
-
-    const currentEp = query.get("ep") || "1";
-
-    if (animeSlug !== correctSlug) {
-      navigate(`/watch/${correctSlug}?ep=${currentEp}`, { replace: true });
-    }
-  }, [anime, animeSlug, correctSlug, location.search, navigate]);
-
-  const shouldShowSupportLayer = () => {
-    const lastShown = Number(localStorage.getItem("supportLayerLastShown") || 0);
-    return Date.now() - lastShown > SUPPORT_COOLDOWN;
-  };
-
   const handleSupportContinue = () => {
     if (supportClicked) return;
 
@@ -322,24 +472,10 @@ export default function Watch() {
   };
 
   useEffect(() => {
-    if (!loading) {
-      if (shouldShowSupportLayer()) {
-        setAllowPlayer(false);
-        setShowSupportLayer(true);
-      } else {
-        setAllowPlayer(true);
-        setShowSupportLayer(false);
-      }
-    }
-  }, [loading, animeId, episode]);
-
-  useEffect(() => {
     let alive = true;
-    let failTimer = null;
 
     async function loadStream() {
-      if (!animeId || !episode || loading || !anime) return;
-      if (!allowPlayer) return;
+      if (!animeId || !episode || !allowPlayer) return;
 
       setStreamLoading(true);
       setIframeLoaded(false);
@@ -363,21 +499,6 @@ export default function Watch() {
 
         setStream(data);
         setReloadKey((prev) => prev + 1);
-        navigate(`/watch/${correctSlug}?ep=${episode}`, { replace: true });
-
-        failTimer = setTimeout(() => {
-          const iframe = document.querySelector("iframe");
-
-          if (!alive) return;
-
-          if (!iframe) {
-            setSelectedServer((prev) =>
-              prev.provider === "megaplay-anilist"
-                ? DEFAULT_SERVERS[1]
-                : DEFAULT_SERVERS[0]
-            );
-          }
-        }, 8000);
       } catch (err) {
         console.error("Stream load error:", err);
 
@@ -397,19 +518,14 @@ export default function Watch() {
 
     return () => {
       alive = false;
-      if (failTimer) clearTimeout(failTimer);
     };
   }, [
-    anime,
     animeId,
     finalMalId,
     episode,
     selectedServer,
     title,
-    loading,
     allowPlayer,
-    correctSlug,
-    navigate,
   ]);
 
   const forceReloadPlayer = () => {
@@ -464,14 +580,6 @@ export default function Watch() {
     if (!normalUrl) return "";
     return `${normalUrl}${normalUrl.includes("?") ? "&" : "?"}reload=${reloadKey}`;
   }, [stream, reloadKey]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#050505] text-white pt-28 flex items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#050505] text-white pt-20 pb-16">
@@ -542,7 +650,7 @@ export default function Watch() {
 
               {iframeUrl && !showSupportLayer ? (
                 <iframe
-                  key={`${animeId}-${episode}-${selectedServer.id}-${reloadKey}`}
+                  key={`${animeId}-${episode}-${selectedServer.id}-${selectedServer.type}-${reloadKey}`}
                   src={iframeUrl}
                   title={`${title} Episode ${episode}`}
                   className="w-full h-full bg-black"
@@ -621,14 +729,6 @@ export default function Watch() {
                               setReloadKey((prev) => prev + 1);
                               setStream(null);
                               setIframeLoaded(false);
-
-                              if (shouldShowSupportLayer()) {
-                                setAllowPlayer(false);
-                                setShowSupportLayer(true);
-                              } else {
-                                setAllowPlayer(true);
-                                setShowSupportLayer(false);
-                              }
                             }}
                             className={`px-4 sm:px-5 py-2 rounded-xl border transition ${
                               isActive
@@ -685,99 +785,105 @@ export default function Watch() {
             </div>
           </div>
 
-          <aside className="bg-[#121212] border border-white/10 rounded-2xl overflow-hidden h-fit xl:sticky xl:top-24">
-            <div className="p-4 border-b border-white/10">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-xl font-bold">Episodes</h2>
-                  <p className="text-sm text-gray-400">
-                    {episodesLoading
-                      ? "Loading episodes..."
-                      : `${sortedEpisodes.length} episodes`}
-                  </p>
+          <aside className="space-y-5 h-fit xl:sticky xl:top-24">
+            <AnimeInfoCard anime={anime} title={title} episode={episode} />
+
+            <div className="bg-[#121212] border border-white/10 rounded-2xl overflow-hidden">
+              <div className="p-4 border-b border-white/10">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-bold">Episodes</h2>
+                    <p className="text-sm text-gray-400">
+                      {episodesLoading
+                        ? "Loading episodes..."
+                        : `${sortedEpisodes.length} episodes`}
+                    </p>
+                  </div>
+
+                  {ranges.length >= 1 && (
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setRangeOpen((prev) => !prev)}
+                        className="min-w-[120px] flex items-center justify-between gap-3 bg-[#1b1b1b] border border-white/10 hover:border-white/25 hover:bg-white/10 rounded-xl px-4 py-2 text-sm font-semibold text-white transition"
+                      >
+                        <span>
+                          {ranges[episodeRange]?.start}-
+                          {ranges[episodeRange]?.end}
+                        </span>
+
+                        <span
+                          className={`transition ${
+                            rangeOpen ? "rotate-180" : ""
+                          }`}
+                        >
+                          ▼
+                        </span>
+                      </button>
+
+                      {rangeOpen && (
+                        <div className="absolute right-0 top-full mt-2 w-[140px] bg-[#151515] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
+                          {ranges.map((range, index) => {
+                            const active = episodeRange === index;
+
+                            return (
+                              <button
+                                key={index}
+                                type="button"
+                                onClick={() => {
+                                  setEpisodeRange(index);
+                                  setRangeOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-3 text-sm font-semibold transition ${
+                                  active
+                                    ? "bg-white text-black"
+                                    : "text-white hover:bg-white/10"
+                                }`}
+                              >
+                                {range.start}-{range.end}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
+              </div>
 
-                {ranges.length >= 1 && (
-                  <div className="relative">
-                    <button
-                      type="button"
-                      onClick={() => setRangeOpen((prev) => !prev)}
-                      className="min-w-[120px] flex items-center justify-between gap-3 bg-[#1b1b1b] border border-white/10 hover:border-white/25 hover:bg-white/10 rounded-xl px-4 py-2 text-sm font-semibold text-white transition"
-                    >
-                      <span>
-                        {ranges[episodeRange]?.start}-
-                        {ranges[episodeRange]?.end}
-                      </span>
+              <div className="max-h-[620px] overflow-y-auto p-4 grid grid-cols-3 gap-2">
+                {episodesLoading ? (
+                  <p className="text-gray-400 col-span-3">
+                    Loading episodes...
+                  </p>
+                ) : visibleEpisodes.length === 0 ? (
+                  <p className="text-gray-400 col-span-3">
+                    No episodes found.
+                  </p>
+                ) : (
+                  visibleEpisodes.map((ep) => {
+                    const epNumber = getEpisodeNumber(ep);
 
-                      <span
-                        className={`transition ${
-                          rangeOpen ? "rotate-180" : ""
+                    return (
+                      <button
+                        key={ep.id || ep.episodeId || epNumber}
+                        onClick={() => goToEpisode(ep)}
+                        className={`h-12 rounded-xl border font-semibold transition ${
+                          String(epNumber) === String(episode)
+                            ? "bg-white text-black border-white"
+                            : "bg-[#1b1b1b] text-white border-white/10 hover:bg-white/10"
                         }`}
                       >
-                        ▼
-                      </span>
-                    </button>
-
-                    {rangeOpen && (
-                      <div className="absolute right-0 top-full mt-2 w-[140px] bg-[#151515] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
-                        {ranges.map((range, index) => {
-                          const active = episodeRange === index;
-
-                          return (
-                            <button
-                              key={index}
-                              type="button"
-                              onClick={() => {
-                                setEpisodeRange(index);
-                                setRangeOpen(false);
-                              }}
-                              className={`w-full text-left px-4 py-3 text-sm font-semibold transition ${
-                                active
-                                  ? "bg-white text-black"
-                                  : "text-white hover:bg-white/10"
-                              }`}
-                            >
-                              {range.start}-{range.end}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
+                        <FontAwesomeIcon
+                          icon={faPlay}
+                          className="text-[10px] mr-2"
+                        />
+                        {epNumber}
+                      </button>
+                    );
+                  })
                 )}
               </div>
-            </div>
-
-            <div className="max-h-[720px] overflow-y-auto p-4 grid grid-cols-3 gap-2">
-              {episodesLoading ? (
-                <p className="text-gray-400 col-span-3">
-                  Loading episodes...
-                </p>
-              ) : visibleEpisodes.length === 0 ? (
-                <p className="text-gray-400 col-span-3">No episodes found.</p>
-              ) : (
-                visibleEpisodes.map((ep) => {
-                  const epNumber = getEpisodeNumber(ep);
-
-                  return (
-                    <button
-                      key={ep.id || ep.episodeId || epNumber}
-                      onClick={() => goToEpisode(ep)}
-                      className={`h-12 rounded-xl border font-semibold transition ${
-                        String(epNumber) === String(episode)
-                          ? "bg-white text-black border-white"
-                          : "bg-[#1b1b1b] text-white border-white/10 hover:bg-white/10"
-                      }`}
-                    >
-                      <FontAwesomeIcon
-                        icon={faPlay}
-                        className="text-[10px] mr-2"
-                      />
-                      {epNumber}
-                    </button>
-                  );
-                })
-              )}
             </div>
           </aside>
         </div>
