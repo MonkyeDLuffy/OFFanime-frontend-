@@ -268,15 +268,8 @@ html {
 
 body {
   overflow-x: hidden;
-  overscroll-behavior-y: none;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-}
-
-img,
-iframe,
-video {
-  content-visibility: auto;
 }
 
 img {
@@ -288,7 +281,6 @@ img {
   box-sizing: border-box;
 }
 
-.blur-heavy,
 .backdrop-blur-xl,
 .backdrop-blur-2xl,
 .backdrop-blur-3xl {
