@@ -62,9 +62,7 @@ function PremiumBannerAd() {
           Sponsored
         </span>
 
-        <span className="text-[10px] text-zinc-500">
-          Support OFFANIME
-        </span>
+        <span className="text-[10px] text-zinc-500">Support OFFANIME</span>
       </div>
 
       <div
@@ -335,84 +333,85 @@ export default function Watch() {
     }
   }, [loading, animeId, episode]);
 
-useEffect(() => {
-  let alive = true;
-  let failTimer = null;
+  useEffect(() => {
+    let alive = true;
+    let failTimer = null;
 
-  async function loadStream() {
-    if (!animeId || !episode || loading || !anime) return;
-    if (!allowPlayer) return;
+    async function loadStream() {
+      if (!animeId || !episode || loading || !anime) return;
+      if (!allowPlayer) return;
 
-    setStreamLoading(true);
-    setIframeLoaded(false);
-    setStream(null);
+      setStreamLoading(true);
+      setIframeLoaded(false);
+      setStream(null);
 
-    try {
-      const streamId =
-        selectedServer.provider === "megaplay-mal"
-          ? finalMalId || animeId
-          : animeId;
+      try {
+        const streamId =
+          selectedServer.provider === "megaplay-mal"
+            ? finalMalId || animeId
+            : animeId;
 
-      const data = await getStreamInfo(
-        streamId,
-        episode,
-        selectedServer.provider,
-        selectedServer.type,
-        title
-      );
-
-      if (!alive) return;
-
-      setStream(data);
-      setReloadKey((prev) => prev + 1);
-      navigate(`/watch/${correctSlug}?ep=${episode}`, { replace: true });
-
-      failTimer = setTimeout(() => {
-        const iframe = document.querySelector("iframe");
+        const data = await getStreamInfo(
+          streamId,
+          episode,
+          selectedServer.provider,
+          selectedServer.type,
+          title
+        );
 
         if (!alive) return;
 
-        if (!iframe) {
-          setSelectedServer((prev) =>
-            prev.provider === "megaplay-anilist"
-              ? DEFAULT_SERVERS[1]
-              : DEFAULT_SERVERS[0]
-          );
-        }
-      }, 8000);
-    } catch (err) {
-      console.error("Stream load error:", err);
+        setStream(data);
+        setReloadKey((prev) => prev + 1);
+        navigate(`/watch/${correctSlug}?ep=${episode}`, { replace: true });
 
-      if (!alive) return;
+        failTimer = setTimeout(() => {
+          const iframe = document.querySelector("iframe");
 
-      setSelectedServer((prev) =>
-        prev.provider === "megaplay-anilist"
-          ? DEFAULT_SERVERS[1]
-          : DEFAULT_SERVERS[0]
-      );
-    } finally {
-      if (alive) setStreamLoading(false);
+          if (!alive) return;
+
+          if (!iframe) {
+            setSelectedServer((prev) =>
+              prev.provider === "megaplay-anilist"
+                ? DEFAULT_SERVERS[1]
+                : DEFAULT_SERVERS[0]
+            );
+          }
+        }, 8000);
+      } catch (err) {
+        console.error("Stream load error:", err);
+
+        if (!alive) return;
+
+        setSelectedServer((prev) =>
+          prev.provider === "megaplay-anilist"
+            ? DEFAULT_SERVERS[1]
+            : DEFAULT_SERVERS[0]
+        );
+      } finally {
+        if (alive) setStreamLoading(false);
+      }
     }
-  }
 
-  loadStream();
+    loadStream();
 
-  return () => {
-    alive = false;
-    if (failTimer) clearTimeout(failTimer);
-  };
-}, [
-  anime,
-  animeId,
-  finalMalId,
-  episode,
-  selectedServer,
-  title,
-  loading,
-  allowPlayer,
-  correctSlug,
-  navigate,
-]);
+    return () => {
+      alive = false;
+      if (failTimer) clearTimeout(failTimer);
+    };
+  }, [
+    anime,
+    animeId,
+    finalMalId,
+    episode,
+    selectedServer,
+    title,
+    loading,
+    allowPlayer,
+    correctSlug,
+    navigate,
+  ]);
+
   const forceReloadPlayer = () => {
     setIframeLoaded(false);
     setReloadKey((prev) => prev + 1);
@@ -600,85 +599,85 @@ useEffect(() => {
               </div>
 
               <div className="mt-5">
-  <p className="text-sm text-gray-400 mb-3">Playback</p>
+                <p className="text-sm text-gray-400 mb-3">Playback</p>
 
-  <div className="flex flex-wrap items-end gap-4">
-    {/* Servers */}
-    <div>
-      <p className="text-xs text-gray-500 mb-2">Servers</p>
+                <div className="flex flex-wrap items-end gap-4">
+                  <div>
+                    <p className="text-xs text-gray-500 mb-2">Servers</p>
 
-      <div className="flex flex-wrap gap-3">
-        {servers.map((server) => {
-          const isActive = selectedServer.id === server.id;
+                    <div className="flex flex-wrap gap-3">
+                      {servers.map((server) => {
+                        const isActive = selectedServer.id === server.id;
 
-          return (
-            <button
-              key={server.id}
-              onClick={() => {
-                setSelectedServer((prev) => ({
-                  ...server,
-                  type: prev.type,
-                }));
+                        return (
+                          <button
+                            key={server.id}
+                            onClick={() => {
+                              setSelectedServer((prev) => ({
+                                ...server,
+                                type: prev.type,
+                              }));
 
-                setReloadKey((prev) => prev + 1);
-                setStream(null);
-                setIframeLoaded(false);
+                              setReloadKey((prev) => prev + 1);
+                              setStream(null);
+                              setIframeLoaded(false);
 
-                if (shouldShowSupportLayer()) {
-                  setAllowPlayer(false);
-                  setShowSupportLayer(true);
-                } else {
-                  setAllowPlayer(true);
-                  setShowSupportLayer(false);
-                }
-              }}
-              className={`px-4 sm:px-5 py-2 rounded-xl border transition ${
-                isActive
-                  ? "bg-white text-black border-white"
-                  : "bg-white/10 text-white border-white/10 hover:bg-white/15"
-              }`}
-            >
-              <FontAwesomeIcon icon={faClosedCaptioning} className="mr-2" />
-              {server.name}
-            </button>
-          );
-        })}
-      </div>
-    </div>
+                              if (shouldShowSupportLayer()) {
+                                setAllowPlayer(false);
+                                setShowSupportLayer(true);
+                              } else {
+                                setAllowPlayer(true);
+                                setShowSupportLayer(false);
+                              }
+                            }}
+                            className={`px-4 sm:px-5 py-2 rounded-xl border transition ${
+                              isActive
+                                ? "bg-white text-black border-white"
+                                : "bg-white/10 text-white border-white/10 hover:bg-white/15"
+                            }`}
+                          >
+                            <FontAwesomeIcon
+                              icon={faClosedCaptioning}
+                              className="mr-2"
+                            />
+                            {server.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
 
-    {/* Audio */}
-    <div>
-      <p className="text-xs text-gray-500 mb-2">Audio</p>
+                  <div>
+                    <p className="text-xs text-gray-500 mb-2">Audio</p>
 
-      <div className="flex flex-wrap gap-3">
-        {["sub", "dub"].map((audioType) => (
-          <button
-            key={audioType}
-            onClick={() => {
-              setSelectedServer((prev) => ({
-                ...prev,
-                type: audioType,
-              }));
+                    <div className="flex flex-wrap gap-3">
+                      {["sub", "dub"].map((audioType) => (
+                        <button
+                          key={audioType}
+                          onClick={() => {
+                            setSelectedServer((prev) => ({
+                              ...prev,
+                              type: audioType,
+                            }));
 
-              setReloadKey((prev) => prev + 1);
-              setStream(null);
-              setIframeLoaded(false);
-            }}
-            className={`px-4 sm:px-5 py-2 rounded-xl border transition ${
-              selectedServer.type === audioType
-                ? "bg-white text-black border-white"
-                : "bg-white/10 text-white border-white/10 hover:bg-white/15"
-            }`}
-          >
-            {audioType.toUpperCase()}
-          </button>
-        ))}
-      </div>
-    </div>
-  </div>
-</div>
-
-        
+                            setReloadKey((prev) => prev + 1);
+                            setStream(null);
+                            setIframeLoaded(false);
+                          }}
+                          className={`px-4 sm:px-5 py-2 rounded-xl border transition ${
+                            selectedServer.type === audioType
+                              ? "bg-white text-black border-white"
+                              : "bg-white/10 text-white border-white/10 hover:bg-white/15"
+                          }`}
+                        >
+                          {audioType.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <PremiumBannerAd />
