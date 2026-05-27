@@ -1,4 +1,4 @@
-const API = "https://anime-details-api.vercel.app";
+const API = import.meta.env.VITE_API_URL || "https://anime-details-api.vercel.app/api";
 
 const memoryCache = new Map();
 
@@ -13,7 +13,7 @@ export default async function getSearch(keyword) {
     }
 
     const response = await fetch(
-      `${API}/api/search?keyword=${encodeURIComponent(q)}`
+      `${API}/search?q=${encodeURIComponent(q)}`
     );
 
     if (!response.ok) {
