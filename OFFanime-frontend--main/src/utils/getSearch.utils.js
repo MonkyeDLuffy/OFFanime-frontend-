@@ -1,4 +1,4 @@
-const API = "https://anime-details-api.onrender.com";
+const API = "https://anime-details-api.vercel.app";
 
 const memoryCache = new Map();
 
