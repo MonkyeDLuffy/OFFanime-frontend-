@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
-const API = "https://anime-details-api.onrender.com";
+const API =
+  import.meta.env.VITE_API_URL || "https://anime-details-api.vercel.app/api";
 
 function getDateLabel(offset) {
   const date = new Date();
@@ -42,11 +43,10 @@ export default function SchedulePage() {
 
       try {
         const res = await fetch(
-          `${API}/api/schedule?date=${activeDay.value}`
+          `${API}/schedule?date=${encodeURIComponent(activeDay.value)}`
         );
 
         const json = await res.json();
-
         setSchedule(Array.isArray(json?.results) ? json.results : []);
       } catch (err) {
         console.log("Schedule load failed:", err);
@@ -62,18 +62,16 @@ export default function SchedulePage() {
   return (
     <div className="min-h-screen bg-[#050505] text-white pt-24 pb-12">
       <div className="max-w-[1450px] mx-auto px-4">
-        {/* HEADER */}
         <div className="mb-7">
           <h1 className="text-4xl sm:text-6xl font-black tracking-tight">
             Anime Schedule
           </h1>
 
           <p className="text-white/40 mt-2 text-sm sm:text-base">
-            Schedule page is separated from home to reduce AniList calls.
+            Upcoming anime episodes, updated from AniList schedule.
           </p>
         </div>
 
-        {/* DAY BUTTONS */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-7">
           {days.map((day) => {
             const active = activeDay.value === day.value;
@@ -102,77 +100,69 @@ export default function SchedulePage() {
           })}
         </div>
 
-        {/* CONTENT */}
         {loading ? (
-          <div className="text-center py-20 text-white/40">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-12 text-center text-white/40">
             Loading schedule...
           </div>
         ) : schedule.length === 0 ? (
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-12 text-center">
             <h2 className="text-2xl font-black">No schedule data</h2>
-
-            <p className="text-white/40 mt-2">
-              Backend schedule unavailable.
-            </p>
+            <p className="text-white/40 mt-2">No anime airing found.</p>
           </div>
         ) : (
           <div className="space-y-3">
             {schedule.map((item, index) => {
+              const id = item.anilistId || item.id;
               const title = item.title || item.name || "Anime";
-
-              const image =
-                item.banner ||
-                item.poster ||
-                item.image ||
-                "https://via.placeholder.com/1200x400";
+              const image = item.banner || item.image || item.poster || "";
+              const poster = item.poster || item.image || image;
 
               return (
                 <Link
-                  key={item.id || index}
-                  to={`/${item.anilistId || item.id}`}
-                  className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] h-[110px] flex items-center"
+                  key={`${id}-${item.episode}-${index}`}
+                  to={`/${id}`}
+                  className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] min-h-[115px] flex items-center"
                 >
-                  {/* Banner */}
-                  <img
-                    src={image}
-                    alt={title}
-                    className="absolute inset-0 w-full h-full object-cover opacity-25 group-hover:scale-105 transition duration-500"
-                  />
+                  {image && (
+                    <img
+                      src={image}
+                      alt={title}
+                      loading="lazy"
+                      className="absolute inset-0 w-full h-full object-cover opacity-25 group-hover:scale-105 transition duration-500"
+                    />
+                  )}
 
-                  {/* Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-r from-black via-black/85 to-black/50" />
 
-                  {/* Poster */}
                   <div className="relative z-10 pl-4">
                     <img
-                      src={item.poster || item.image}
+                      src={poster}
                       alt={title}
-                      className="w-[64px] h-[84px] object-cover rounded-xl border border-white/10"
+                      loading="lazy"
+                      className="w-[64px] h-[84px] object-cover rounded-xl border border-white/10 bg-white/5"
                     />
                   </div>
 
-                  {/* INFO */}
                   <div className="relative z-10 flex-1 px-4 min-w-0">
                     <h2 className="text-lg sm:text-2xl font-black line-clamp-1">
                       {title}
                     </h2>
 
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
-                      <div className="px-3 py-1 rounded-full bg-white/10 text-xs text-white/80">
+                      <span className="px-3 py-1 rounded-full bg-white/10 text-xs text-white/80">
                         Episode {item.episode || "?"}
-                      </div>
+                      </span>
 
-                      <div className="px-3 py-1 rounded-full bg-white/10 text-xs text-white/80">
+                      <span className="px-3 py-1 rounded-full bg-white/10 text-xs text-white/80">
                         {item.type || "TV"}
-                      </div>
+                      </span>
 
-                      <div className="px-3 py-1 rounded-full bg-white/10 text-xs text-white/80 md:hidden">
+                      <span className="px-3 py-1 rounded-full bg-white/10 text-xs text-white/80 md:hidden">
                         {item.time || "N/A"}
-                      </div>
+                      </span>
                     </div>
                   </div>
 
-                  {/* TIME */}
                   <div className="relative z-10 pr-4 hidden md:block">
                     <div className="rounded-xl bg-black/60 backdrop-blur-md border border-white/10 px-4 py-2 text-sm font-bold">
                       {item.time || "N/A"}
