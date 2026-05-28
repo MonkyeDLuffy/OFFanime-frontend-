@@ -1,21 +1,18 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import getCategoryInfo from "@/src/utils/getCategoryInfo.utils";
 import { createAnimeSlug } from "@/src/utils/slug.utils";
-
-const API =
-  import.meta.env.VITE_API_URL || "https://anime-details-api.vercel.app/api";
 
 const ITEMS_PER_PAGE = 24;
 
 export default function Category({ path, label }) {
   const [searchParams, setSearchParams] = useSearchParams();
-
   const startPage = Number(searchParams.get("page")) || 1;
 
   const [anime, setAnime] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(startPage);
+  const [hasNextPage, setHasNextPage] = useState(false);
 
   const title = label || path?.split("-").join(" ") || "Anime";
 
@@ -24,48 +21,26 @@ export default function Category({ path, label }) {
       setLoading(true);
 
       try {
-        let results = [];
+        const data = await getCategoryInfo(path, page);
 
-        if (path === "top-airing") {
-          const res = await fetch(`${API}/home`);
-          const data = await res.json();
-
-          results =
-            data?.top_airing ||
-            data?.results?.top_airing ||
-            data?.data?.top_airing ||
-            [];
-        } else {
-          const data = await getCategoryInfo(path, 1);
-
-          results =
-            data?.results ||
-            data?.data ||
-            data?.animes ||
-            [];
-        }
+        const results = data?.results || data?.data || data?.animes || [];
 
         setAnime(Array.isArray(results) ? results : []);
+        setHasNextPage(Array.isArray(results) && results.length >= ITEMS_PER_PAGE);
       } catch (err) {
         console.error("Category load failed:", err);
         setAnime([]);
+        setHasNextPage(false);
       } finally {
         setLoading(false);
       }
     }
 
     loadCategory();
-    setPage(startPage);
-  }, [path]);
-
-  const totalPages = Math.max(1, Math.ceil(anime.length / ITEMS_PER_PAGE));
-
-  const paginatedAnime = useMemo(() => {
-    return anime.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
-  }, [anime, page]);
+  }, [path, page]);
 
   function changePage(pageNumber) {
-    if (pageNumber < 1 || pageNumber > totalPages) return;
+    if (pageNumber < 1) return;
 
     setPage(pageNumber);
     setSearchParams({ page: String(pageNumber) });
@@ -86,7 +61,7 @@ export default function Category({ path, label }) {
         {!loading && anime.length > 0 && (
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-5">
-              {paginatedAnime.map((item, index) => {
+              {anime.map((item, index) => {
                 const id = item.id || item.anilistId;
                 const animeTitle =
                   item.title || item.name || item.animeTitle || "Unknown";
@@ -131,59 +106,35 @@ export default function Category({ path, label }) {
               })}
             </div>
 
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-3 mt-14 flex-wrap">
-                <button
-                  onClick={() => changePage(page - 1)}
-                  disabled={page === 1}
-                  className={`w-11 h-11 rounded-full border transition ${
-                    page === 1
-                      ? "opacity-40 cursor-not-allowed border-white/10"
-                      : "border-white/20 hover:bg-white hover:text-black"
-                  }`}
-                >
-                  ←
-                </button>
+            <div className="flex items-center justify-center gap-3 mt-14">
+              <button
+                onClick={() => changePage(page - 1)}
+                disabled={page === 1}
+                className={`px-5 py-3 rounded-full border font-bold ${
+                  page === 1
+                    ? "opacity-40 cursor-not-allowed border-white/10"
+                    : "border-white/20 hover:bg-white hover:text-black"
+                }`}
+              >
+                ← Prev
+              </button>
 
-                {Array.from({ length: totalPages }).map((_, i) => {
-                  const pageNumber = i + 1;
+              <button className="w-12 h-12 rounded-full bg-white text-black font-black">
+                {page}
+              </button>
 
-                  if (
-                    pageNumber !== 1 &&
-                    pageNumber !== totalPages &&
-                    Math.abs(page - pageNumber) > 2
-                  ) {
-                    return null;
-                  }
-
-                  return (
-                    <button
-                      key={pageNumber}
-                      onClick={() => changePage(pageNumber)}
-                      className={`w-11 h-11 rounded-full border text-sm font-bold transition ${
-                        page === pageNumber
-                          ? "bg-white text-black border-white"
-                          : "border-white/15 bg-white/5 hover:bg-white hover:text-black"
-                      }`}
-                    >
-                      {pageNumber}
-                    </button>
-                  );
-                })}
-
-                <button
-                  onClick={() => changePage(page + 1)}
-                  disabled={page === totalPages}
-                  className={`w-11 h-11 rounded-full border transition ${
-                    page === totalPages
-                      ? "opacity-40 cursor-not-allowed border-white/10"
-                      : "border-white/20 hover:bg-white hover:text-black"
-                  }`}
-                >
-                  →
-                </button>
-              </div>
-            )}
+              <button
+                onClick={() => changePage(page + 1)}
+                disabled={!hasNextPage}
+                className={`px-5 py-3 rounded-full border font-bold ${
+                  !hasNextPage
+                    ? "opacity-40 cursor-not-allowed border-white/10"
+                    : "border-white/20 hover:bg-white hover:text-black"
+                }`}
+              >
+                Next →
+              </button>
+            </div>
           </>
         )}
       </div>
