@@ -26,7 +26,6 @@ export default function Category({ path, label }) {
       try {
         let results = [];
 
-        // ✅ top-airing page must use same data as home page
         if (path === "top-airing") {
           const res = await fetch(`${API}/home`);
           const data = await res.json();
@@ -56,19 +55,18 @@ export default function Category({ path, label }) {
     }
 
     loadCategory();
-    setPage(1);
+    setPage(startPage);
   }, [path]);
 
   const totalPages = Math.max(1, Math.ceil(anime.length / ITEMS_PER_PAGE));
 
   const paginatedAnime = useMemo(() => {
-    return anime.slice(
-      (page - 1) * ITEMS_PER_PAGE,
-      page * ITEMS_PER_PAGE
-    );
+    return anime.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
   }, [anime, page]);
 
   function changePage(pageNumber) {
+    if (pageNumber < 1 || pageNumber > totalPages) return;
+
     setPage(pageNumber);
     setSearchParams({ page: String(pageNumber) });
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -77,16 +75,12 @@ export default function Category({ path, label }) {
   return (
     <div className="min-h-screen bg-[#080808] text-white px-6 pt-28 pb-20">
       <div className="max-w-[1500px] mx-auto">
-        <h1 className="text-3xl font-bold capitalize mb-8">
-          {title}
-        </h1>
+        <h1 className="text-3xl font-bold capitalize mb-8">{title}</h1>
 
         {loading && <p className="text-gray-400">Loading...</p>}
 
         {!loading && anime.length === 0 && (
-          <p className="text-gray-400">
-            No results found for: {title}
-          </p>
+          <p className="text-gray-400">No results found for: {title}</p>
         )}
 
         {!loading && anime.length > 0 && (
@@ -95,10 +89,7 @@ export default function Category({ path, label }) {
               {paginatedAnime.map((item, index) => {
                 const id = item.id || item.anilistId;
                 const animeTitle =
-                  item.title ||
-                  item.name ||
-                  item.animeTitle ||
-                  "Unknown";
+                  item.title || item.name || item.animeTitle || "Unknown";
 
                 const poster =
                   item.poster ||
@@ -141,25 +132,56 @@ export default function Category({ path, label }) {
             </div>
 
             {totalPages > 1 && (
-              <div className="flex flex-wrap gap-2 justify-center mt-12">
+              <div className="flex items-center justify-center gap-3 mt-14 flex-wrap">
+                <button
+                  onClick={() => changePage(page - 1)}
+                  disabled={page === 1}
+                  className={`w-11 h-11 rounded-full border transition ${
+                    page === 1
+                      ? "opacity-40 cursor-not-allowed border-white/10"
+                      : "border-white/20 hover:bg-white hover:text-black"
+                  }`}
+                >
+                  ←
+                </button>
+
                 {Array.from({ length: totalPages }).map((_, i) => {
                   const pageNumber = i + 1;
-                  const active = page === pageNumber;
+
+                  if (
+                    pageNumber !== 1 &&
+                    pageNumber !== totalPages &&
+                    Math.abs(page - pageNumber) > 2
+                  ) {
+                    return null;
+                  }
 
                   return (
                     <button
                       key={pageNumber}
                       onClick={() => changePage(pageNumber)}
-                      className={`w-10 h-10 rounded-full border text-sm font-bold transition ${
-                        active
+                      className={`w-11 h-11 rounded-full border text-sm font-bold transition ${
+                        page === pageNumber
                           ? "bg-white text-black border-white"
-                          : "bg-white/10 text-white border-white/10 hover:bg-white/20"
+                          : "border-white/15 bg-white/5 hover:bg-white hover:text-black"
                       }`}
                     >
                       {pageNumber}
                     </button>
                   );
                 })}
+
+                <button
+                  onClick={() => changePage(page + 1)}
+                  disabled={page === totalPages}
+                  className={`w-11 h-11 rounded-full border transition ${
+                    page === totalPages
+                      ? "opacity-40 cursor-not-allowed border-white/10"
+                      : "border-white/20 hover:bg-white hover:text-black"
+                  }`}
+                >
+                  →
+                </button>
               </div>
             )}
           </>
