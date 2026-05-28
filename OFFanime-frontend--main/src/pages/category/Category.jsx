@@ -7,55 +7,97 @@ const ITEMS_PER_PAGE = 24;
 
 export default function Category({ path, label }) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const startPage = Number(searchParams.get("page")) || 1;
+
+  const page = Number(searchParams.get("page") || 1);
 
   const [anime, setAnime] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(startPage);
-  const [hasNextPage, setHasNextPage] = useState(false);
+  const [pagination, setPagination] = useState(null);
 
   const title = label || path?.split("-").join(" ") || "Anime";
 
   useEffect(() => {
+    let alive = true;
+
     async function loadCategory() {
       setLoading(true);
 
       try {
         const data = await getCategoryInfo(path, page);
 
-        const results = data?.results || data?.data || data?.animes || [];
+        if (!alive) return;
+
+        const results =
+          data?.results ||
+          data?.data ||
+          data?.animes ||
+          [];
+
+        const pageInfo = data?.paginationInfo || {};
 
         setAnime(Array.isArray(results) ? results : []);
-        setHasNextPage(Array.isArray(results) && results.length >= ITEMS_PER_PAGE);
+
+        setPagination({
+          total: pageInfo.total || 0,
+          currentPage: pageInfo.currentPage || page,
+          lastPage:
+            pageInfo.lastPage ||
+            Math.max(page, pageInfo.hasNextPage ? page + 1 : page),
+          hasNextPage:
+            pageInfo.hasNextPage === true ||
+            page < pageInfo.lastPage ||
+            results.length >= ITEMS_PER_PAGE,
+        });
       } catch (err) {
         console.error("Category load failed:", err);
+
+        if (!alive) return;
+
         setAnime([]);
-        setHasNextPage(false);
+        setPagination(null);
       } finally {
-        setLoading(false);
+        if (alive) setLoading(false);
       }
     }
 
     loadCategory();
+
+    return () => {
+      alive = false;
+    };
   }, [path, page]);
 
-  function changePage(pageNumber) {
-    if (pageNumber < 1) return;
+  function changePage(nextPage) {
+    if (nextPage < 1) return;
 
-    setPage(pageNumber);
-    setSearchParams({ page: String(pageNumber) });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setSearchParams({ page: String(nextPage) });
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
+
+  const canGoNext =
+    pagination?.hasNextPage === true || anime.length >= ITEMS_PER_PAGE;
 
   return (
     <div className="min-h-screen bg-[#080808] text-white px-6 pt-28 pb-20">
       <div className="max-w-[1500px] mx-auto">
-        <h1 className="text-3xl font-bold capitalize mb-8">{title}</h1>
+        <h1 className="text-3xl font-bold capitalize mb-8">
+          {title}
+        </h1>
 
-        {loading && <p className="text-gray-400">Loading...</p>}
+        {loading && (
+          <p className="text-gray-400">
+            Loading...
+          </p>
+        )}
 
         {!loading && anime.length === 0 && (
-          <p className="text-gray-400">No results found for: {title}</p>
+          <p className="text-gray-400">
+            No results found for: {title}
+          </p>
         )}
 
         {!loading && anime.length > 0 && (
@@ -63,8 +105,12 @@ export default function Category({ path, label }) {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-5">
               {anime.map((item, index) => {
                 const id = item.id || item.anilistId;
+
                 const animeTitle =
-                  item.title || item.name || item.animeTitle || "Unknown";
+                  item.title ||
+                  item.name ||
+                  item.animeTitle ||
+                  "Unknown";
 
                 const poster =
                   item.poster ||
@@ -80,12 +126,18 @@ export default function Category({ path, label }) {
                     className="group"
                   >
                     <div className="relative overflow-hidden rounded-xl bg-white/5 border border-white/10">
-                      <img
-                        src={poster}
-                        alt={animeTitle}
-                        loading="lazy"
-                        className="w-full h-[280px] object-cover group-hover:scale-105 transition duration-300"
-                      />
+                      {poster ? (
+                        <img
+                          src={poster}
+                          alt={animeTitle}
+                          loading="lazy"
+                          className="w-full h-[280px] object-cover group-hover:scale-105 transition duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-[280px] bg-white/5 flex items-center justify-center text-gray-500">
+                          No Image
+                        </div>
+                      )}
 
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
@@ -109,9 +161,9 @@ export default function Category({ path, label }) {
             <div className="flex items-center justify-center gap-3 mt-14">
               <button
                 onClick={() => changePage(page - 1)}
-                disabled={page === 1}
-                className={`px-5 py-3 rounded-full border font-bold ${
-                  page === 1
+                disabled={page <= 1}
+                className={`px-5 py-3 rounded-full border font-bold transition ${
+                  page <= 1
                     ? "opacity-40 cursor-not-allowed border-white/10"
                     : "border-white/20 hover:bg-white hover:text-black"
                 }`}
@@ -125,9 +177,9 @@ export default function Category({ path, label }) {
 
               <button
                 onClick={() => changePage(page + 1)}
-                disabled={!hasNextPage}
-                className={`px-5 py-3 rounded-full border font-bold ${
-                  !hasNextPage
+                disabled={!canGoNext}
+                className={`px-5 py-3 rounded-full border font-bold transition ${
+                  !canGoNext
                     ? "opacity-40 cursor-not-allowed border-white/10"
                     : "border-white/20 hover:bg-white hover:text-black"
                 }`}
