@@ -35,10 +35,7 @@ function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setAppLoading(false);
-
-      setTimeout(() => {
-        setShowLoader(false);
-      }, 800);
+      setTimeout(() => setShowLoader(false), 800);
     }, 2800);
 
     return () => clearTimeout(timer);
@@ -46,7 +43,7 @@ function App() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [location]);
+  }, [location.pathname]);
 
   const isSplashScreen = location.pathname === "/";
 
@@ -89,6 +86,16 @@ function App() {
 
                 <Route
                   path="/latest-completed"
+                  element={
+                    <Category
+                      path="latest-completed"
+                      label="Latest Completed"
+                    />
+                  }
+                />
+
+                <Route
+                  path="/completed"
                   element={
                     <Category
                       path="latest-completed"
