@@ -1,11 +1,18 @@
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useParams } from "react-router-dom";
 import getCategoryInfo from "@/src/utils/getCategoryInfo.utils";
 import { createAnimeSlug } from "@/src/utils/slug.utils";
 
 const ITEMS_PER_PAGE = 24;
 
+function formatGenreName(value = "") {
+  return value
+    .replaceAll("-", " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 export default function Category({ path, label }) {
+  const { genre } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const page = Number(searchParams.get("page") || 1);
@@ -14,7 +21,11 @@ export default function Category({ path, label }) {
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState(null);
 
-  const title = label || path?.split("-").join(" ") || "Anime";
+  const isGenrePage = path === "genre";
+
+  const title = isGenrePage
+    ? formatGenreName(genre || "")
+    : label || path?.split("-").join(" ") || "Anime";
 
   useEffect(() => {
     let alive = true;
@@ -23,16 +34,11 @@ export default function Category({ path, label }) {
       setLoading(true);
 
       try {
-        const data = await getCategoryInfo(path, page);
+        const data = await getCategoryInfo(path, page, genre);
 
         if (!alive) return;
 
-        const results =
-          data?.results ||
-          data?.data ||
-          data?.animes ||
-          [];
-
+        const results = data?.results || data?.data || data?.animes || [];
         const pageInfo = data?.paginationInfo || {};
 
         setAnime(Array.isArray(results) ? results : []);
@@ -65,7 +71,7 @@ export default function Category({ path, label }) {
     return () => {
       alive = false;
     };
-  }, [path, page]);
+  }, [path, page, genre]);
 
   function changePage(nextPage) {
     if (nextPage < 1) return;
@@ -84,20 +90,12 @@ export default function Category({ path, label }) {
   return (
     <div className="min-h-screen bg-[#080808] text-white px-6 pt-28 pb-20">
       <div className="max-w-[1500px] mx-auto">
-        <h1 className="text-3xl font-bold capitalize mb-8">
-          {title}
-        </h1>
+        <h1 className="text-3xl font-bold capitalize mb-8">{title}</h1>
 
-        {loading && (
-          <p className="text-gray-400">
-            Loading...
-          </p>
-        )}
+        {loading && <p className="text-gray-400">Loading...</p>}
 
         {!loading && anime.length === 0 && (
-          <p className="text-gray-400">
-            No results found for: {title}
-          </p>
+          <p className="text-gray-400">No results found for: {title}</p>
         )}
 
         {!loading && anime.length > 0 && (
@@ -107,10 +105,7 @@ export default function Category({ path, label }) {
                 const id = item.id || item.anilistId;
 
                 const animeTitle =
-                  item.title ||
-                  item.name ||
-                  item.animeTitle ||
-                  "Unknown";
+                  item.title || item.name || item.animeTitle || "Unknown";
 
                 const poster =
                   item.poster ||
