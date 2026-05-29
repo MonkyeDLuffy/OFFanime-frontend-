@@ -148,6 +148,12 @@ function App() {
 
                 <Route path="*" element={<Error error="404" />} />
               </Routes>
+
+                <Route
+  path="/genre/:genre"
+  element={<Category path="genre" label="Genre" />}
+/>
+              
             </div>
 
             {!isSplashScreen && <Footer />}
