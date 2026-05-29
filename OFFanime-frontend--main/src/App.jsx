@@ -104,6 +104,11 @@ function App() {
                   }
                 />
 
+                <Route
+                  path="/genre/:genre"
+                  element={<Category path="genre" label="Genre" />}
+                />
+
                 <Route path="/search" element={<Search />} />
                 <Route path="/search/:keyword" element={<Search />} />
 
@@ -148,12 +153,6 @@ function App() {
 
                 <Route path="*" element={<Error error="404" />} />
               </Routes>
-
-                <Route
-  path="/genre/:genre"
-  element={<Category path="genre" label="Genre" />}
-/>
-              
             </div>
 
             {!isSplashScreen && <Footer />}
@@ -182,4 +181,3 @@ function RandomAnimeRedirect() {
 }
 
 export default App;
-
