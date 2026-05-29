@@ -1,17 +1,23 @@
-const API = import.meta.env.VITE_API_URL;
+import axios from "axios";
 
-export default async function getJikanInfo(anilistId) {
+export default async function getJikanInfo(malId) {
   try {
-    const response = await fetch(`${API}/jikan/anime/${anilistId}`);
+    const apiUrl = import.meta.env.VITE_API_URL;
 
-    if (!response.ok) {
-      throw new Error(`Jikan API failed: ${response.status}`);
-    }
+    const response = await axios.get(
+      `${apiUrl}/jikan/anime/${malId}`,
+      {
+        timeout: 30000,
+      }
+    );
 
-    const json = await response.json();
-    return json?.data || null;
-  } catch (err) {
-    console.log("Jikan fetch failed:", err.message);
+    return response.data?.data || null;
+  } catch (error) {
+    console.error(
+      "Jikan fetch failed:",
+      error?.response?.status || error.message
+    );
+
     return null;
   }
 }
