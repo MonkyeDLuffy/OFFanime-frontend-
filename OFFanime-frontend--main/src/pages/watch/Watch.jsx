@@ -31,6 +31,9 @@ const DEFAULT_SERVERS = [
   },
 ];
 
+const MONETAG_ZONE_ID = "11076695";
+const ADSTERRA_KEY = "fa18fe18755cc0b110e4155f955a4c3e";
+
 function cleanDescription(text = "") {
   return String(text)
     .replace(/<[^>]*>/g, "")
@@ -38,16 +41,38 @@ function cleanDescription(text = "") {
     .trim();
 }
 
-function PremiumBannerAd() {
+function triggerMonetagPopunder() {
+  try {
+    const oldScript = document.querySelector(
+      `script[data-zone="${MONETAG_ZONE_ID}"]`
+    );
+
+    if (oldScript) oldScript.remove();
+
+    const script = document.createElement("script");
+    script.dataset.zone = MONETAG_ZONE_ID;
+    script.src = "https://al5sm.com/tag.min.js";
+    script.async = true;
+
+    document.body.appendChild(script);
+  } catch (error) {
+    console.error("Monetag popunder failed:", error);
+  }
+}
+
+function PremiumBannerAd({ directLink = "" }) {
   const adRef = useRef(null);
+  const [failed, setFailed] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     if (!adRef.current) return;
 
+    setFailed(false);
     adRef.current.innerHTML = "";
 
     window.atOptions = {
-      key: "fa18fe18755cc0b110e4155f955a4c3e",
+      key: ADSTERRA_KEY,
       format: "iframe",
       height: 50,
       width: 320,
@@ -55,12 +80,31 @@ function PremiumBannerAd() {
     };
 
     const script = document.createElement("script");
-    script.src =
-      "https://www.highperformanceformat.com/fa18fe18755cc0b110e4155f955a4c3e/invoke.js";
+    script.src = `https://www.highperformanceformat.com/${ADSTERRA_KEY}/invoke.js`;
     script.async = true;
 
+    script.onerror = () => {
+      setFailed(true);
+    };
+
     adRef.current.appendChild(script);
-  }, []);
+
+    const checkTimer = setTimeout(() => {
+      if (!adRef.current) return;
+
+      const hasIframe = adRef.current.querySelector("iframe");
+
+      if (!hasIframe) {
+        if (retryKey < 2) {
+          setRetryKey((prev) => prev + 1);
+        } else {
+          setFailed(true);
+        }
+      }
+    }, 4500);
+
+    return () => clearTimeout(checkTimer);
+  }, [retryKey]);
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#111111] via-[#161616] to-[#0b0b0b] shadow-[0_0_25px_rgba(255,255,255,0.04)] backdrop-blur-xl p-4">
@@ -71,10 +115,23 @@ function PremiumBannerAd() {
         <span className="text-[10px] text-zinc-500">Support OFFANIME</span>
       </div>
 
-      <div
-        ref={adRef}
-        className="w-[320px] h-[50px] max-w-full overflow-hidden rounded-xl border border-white/5 bg-black/40 mx-auto"
-      />
+      {!failed ? (
+        <div
+          ref={adRef}
+          className="w-[320px] h-[50px] max-w-full overflow-hidden rounded-xl border border-white/5 bg-black/40 mx-auto flex items-center justify-center"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            triggerMonetagPopunder();
+            if (directLink) window.open(directLink, "_blank", "noopener,noreferrer");
+          }}
+          className="w-[320px] h-[50px] max-w-full mx-auto rounded-xl bg-white text-black font-extrabold text-sm hover:bg-gray-200 transition flex items-center justify-center"
+        >
+          Support OFFANIME
+        </button>
+      )}
     </div>
   );
 }
@@ -168,12 +225,13 @@ function AnimeInfoCard({ anime, title, episode }) {
         {genres.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-5">
             {genres.slice(0, 5).map((genre) => (
-              <span
+              <Link
                 key={genre}
-                className="px-3 py-1 rounded-full bg-white text-black text-xs font-bold"
+                to={`/genre/${String(genre).toLowerCase().replace(/\s+/g, "-")}`}
+                className="px-3 py-1 rounded-full bg-white text-black text-xs font-bold hover:bg-gray-200 transition"
               >
                 {genre}
-              </span>
+              </Link>
             ))}
           </div>
         )}
@@ -451,6 +509,8 @@ export default function Watch() {
   const handleSupportContinue = () => {
     if (supportClicked) return;
 
+    triggerMonetagPopunder();
+
     setSupportClicked(true);
     setSupportCountdown(3);
 
@@ -519,14 +579,7 @@ export default function Watch() {
     return () => {
       alive = false;
     };
-  }, [
-    animeId,
-    finalMalId,
-    episode,
-    selectedServer,
-    title,
-    allowPlayer,
-  ]);
+  }, [animeId, finalMalId, episode, selectedServer, title, allowPlayer]);
 
   const forceReloadPlayer = () => {
     setIframeLoaded(false);
@@ -597,6 +650,8 @@ export default function Watch() {
 
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6">
           <div className="space-y-5">
+            <PremiumBannerAd />
+
             <div className="relative w-full h-[430px] sm:h-auto sm:aspect-video bg-black rounded-xl sm:rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
               {showSupportLayer && (
                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md px-4 py-6 overflow-y-auto">
@@ -619,13 +674,7 @@ export default function Watch() {
                     </p>
 
                     <button
-                      onClick={() => {
-                        window.open(
-                          "https://www.profitablecpmratenetwork.com/zr01hhkca7?key=7be31ab1b7945153e6f435dbad0aabef",
-                          "_blank"
-                        );
-                        handleSupportContinue();
-                      }}
+                      onClick={handleSupportContinue}
                       disabled={supportClicked}
                       className="w-full max-w-[320px] sm:max-w-[350px] mx-auto rounded-full bg-white text-black font-extrabold py-4 sm:py-5 text-sm sm:text-lg tracking-wide hover:bg-gray-200 transition disabled:opacity-80 shadow-xl"
                     >
@@ -779,14 +828,13 @@ export default function Watch() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <PremiumBannerAd />
-              <PremiumBannerAd />
-            </div>
+            <PremiumBannerAd />
           </div>
 
           <aside className="space-y-5 h-fit xl:sticky xl:top-24">
             <AnimeInfoCard anime={anime} title={title} episode={episode} />
+
+            <PremiumBannerAd />
 
             <div className="bg-[#121212] border border-white/10 rounded-2xl overflow-hidden">
               <div className="p-4 border-b border-white/10">
