@@ -51,7 +51,7 @@ function triggerMonetagPopunder() {
 
     const script = document.createElement("script");
     script.dataset.zone = MONETAG_ZONE_ID;
-    script.src = "https://al5sm.com/tag.min.js";
+    script.src = "https://omg10.com/4/11076763";
     script.async = true;
 
     document.body.appendChild(script);
