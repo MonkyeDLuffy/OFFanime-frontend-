@@ -8,10 +8,7 @@ import getSeasons from "@/src/utils/getSeasons.utils";
 import getJikanInfo from "@/src/utils/getJikanInfo.utils";
 import getTmdbInfo from "@/src/utils/getTmdbInfo.utils";
 
-import {
-  createAnimeSlug,
-  getAnimeIdFromSlug,
-} from "@/src/utils/slug.utils";
+import { createAnimeSlug, getAnimeIdFromSlug } from "@/src/utils/slug.utils";
 
 import Hero from "./components/Hero";
 import Seasons from "./components/Seasons";
@@ -75,36 +72,6 @@ function PremiumBannerAd() {
             className="w-[320px] h-[50px] overflow-hidden rounded-xl border border-white/5 bg-black/30"
           />
         </div>
-      </div>
-    </div>
-  );
-}
-
-function TrailerBox({ anime, jikanInfo }) {
-  const trailer =
-    jikanInfo?.trailer?.embed_url ||
-    jikanInfo?.trailer?.embedUrl ||
-    jikanInfo?.trailer?.url ||
-    anime?.trailer?.embed_url ||
-    anime?.trailer?.embedUrl ||
-    anime?.trailer?.url ||
-    anime?.trailer ||
-    null;
-
-  if (!trailer) return null;
-
-  return (
-    <div className="max-w-7xl mx-auto px-6 mt-8">
-      <h2 className="text-2xl font-bold mb-4">Trailer</h2>
-
-      <div className="w-full max-w-[720px] aspect-video rounded-2xl overflow-hidden border border-white/10 bg-black shadow-[0_0_30px_rgba(255,255,255,0.04)]">
-        <iframe
-          src={trailer}
-          title={`${anime?.title || anime?.name || "Anime"} Trailer`}
-          className="w-full h-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
       </div>
     </div>
   );
@@ -178,13 +145,28 @@ export default function AnimeInfo() {
 
         setAnime(animeData);
 
-        getJikanInfo(id)
-          .then((jikan) => {
-            if (alive && jikan) setJikanInfo(jikan);
-          })
-          .catch((err) => {
-            console.log("Failed to load Jikan:", err.message);
-          });
+        const malId =
+          animeData?.malId ||
+          animeData?.malID ||
+          animeData?.mal_id ||
+          animeData?.idMal ||
+          animeData?.mappings?.mal ||
+          animeData?.mappings?.malId ||
+          animeData?.externalIds?.mal ||
+          animeData?.externalIds?.malId ||
+          animeData?.ids?.mal ||
+          animeData?.ids?.malId ||
+          null;
+
+        if (malId) {
+          getJikanInfo(malId)
+            .then((jikan) => {
+              if (alive && jikan) setJikanInfo(jikan);
+            })
+            .catch((err) => {
+              console.log("Failed to load Jikan:", err.message);
+            });
+        }
 
         getTmdbInfo(id)
           .then((tmdb) => {
@@ -250,19 +232,25 @@ export default function AnimeInfo() {
 
         if (activeTab === "episodes") {
           const res = await getEpisodes(id);
-          const data = Array.isArray(res) ? res : res?.results || [];
+          const data = Array.isArray(res)
+            ? res
+            : res?.results || res?.episodes || [];
           if (alive) setEpisodes(data);
         }
 
         if (activeTab === "relations") {
           const res = await getSeasons(id);
-          const data = Array.isArray(res) ? res : res?.results || [];
+          const data = Array.isArray(res)
+            ? res
+            : res?.results || res?.seasons || [];
           if (alive) setSeasons(data);
         }
 
         if (activeTab === "recommendations") {
           const res = await getRecommendations(id);
-          const data = Array.isArray(res) ? res : res?.results || [];
+          const data = Array.isArray(res)
+            ? res
+            : res?.results || res?.recommendations || [];
           if (alive) setRecommendations(data);
         }
 
@@ -314,8 +302,6 @@ export default function AnimeInfo() {
         tmdbInfo={tmdbInfo}
         tmdbLoading={tmdbLoading}
       />
-
-      <TrailerBox anime={anime} jikanInfo={jikanInfo} />
 
       <div className="max-w-7xl mx-auto px-6 pb-16">
         <div className="mt-8 border-b border-white/10 grid grid-cols-[1fr_430px] gap-6 items-end max-lg:block">
