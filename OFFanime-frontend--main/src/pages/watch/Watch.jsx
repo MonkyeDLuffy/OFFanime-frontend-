@@ -49,7 +49,7 @@ function triggerMonetagPopunder() {
 
     const script = document.createElement("script");
     script.dataset.zone = MONETAG_ZONE_ID;
-    script.src = https://omg10.com/4/9773375";
+    script.src = "https://omg10.com/4/9773375";
     script.async = true;
 
     document.body.appendChild(script);
