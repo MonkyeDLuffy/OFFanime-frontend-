@@ -698,17 +698,25 @@ export default function Watch() {
               )}
 
               {iframeUrl && !showSupportLayer ? (
-                <iframe
-                  key={`${animeId}-${episode}-${selectedServer.id}-${selectedServer.type}-${reloadKey}`}
-                  src={iframeUrl}
-                  title={`${title} Episode ${episode}`}
-                  className="w-full h-full bg-black"
-                  allowFullScreen
-                  scrolling="no"
-                  frameBorder="0"
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  onLoad={() => setIframeLoaded(true)}
-                />
+               <>
+  <div className="absolute top-3 left-3 z-30 bg-green-600 text-white px-3 py-2 rounded-lg text-xs sm:text-sm font-bold shadow-lg">
+    Ad-Block ON
+  </div>
+
+  <iframe
+    key={`${animeId}-${episode}-${selectedServer.id}-${selectedServer.type}-${reloadKey}`}
+    src={iframeUrl}
+    title={`${title} Episode ${episode}`}
+    className="w-full h-full bg-black"
+    allowFullScreen
+    scrolling="no"
+    frameBorder="0"
+    referrerPolicy="no-referrer"
+    sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-pointer-lock"
+    allow="autoplay; fullscreen; picture-in-picture"
+    onLoad={() => setIframeLoaded(true)}
+  />
+</>
               ) : (
                 !streamLoading &&
                 !showSupportLayer && (
