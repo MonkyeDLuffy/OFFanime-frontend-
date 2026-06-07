@@ -7,6 +7,7 @@ import {
   faPlay,
   faRotateRight,
   faHeart,
+  faShieldHalved,
 } from "@fortawesome/free-solid-svg-icons";
 
 import fetchAnimeInfo from "@/src/utils/getAnimeInfo.utils";
@@ -35,10 +36,7 @@ const MONETAG_ZONE_ID = "11076695";
 const ADSTERRA_KEY = "fa18fe18755cc0b110e4155f955a4c3e";
 
 function cleanDescription(text = "") {
-  return String(text)
-    .replace(/<[^>]*>/g, "")
-    .replace(/\n/g, " ")
-    .trim();
+  return String(text).replace(/<[^>]*>/g, "").replace(/\n/g, " ").trim();
 }
 
 function triggerMonetagPopunder() {
@@ -83,9 +81,7 @@ function PremiumBannerAd({ directLink = "" }) {
     script.src = `https://www.highperformanceformat.com/${ADSTERRA_KEY}/invoke.js`;
     script.async = true;
 
-    script.onerror = () => {
-      setFailed(true);
-    };
+    script.onerror = () => setFailed(true);
 
     adRef.current.appendChild(script);
 
@@ -125,7 +121,9 @@ function PremiumBannerAd({ directLink = "" }) {
           type="button"
           onClick={() => {
             triggerMonetagPopunder();
-            if (directLink) window.open(directLink, "_blank", "noopener,noreferrer");
+            if (directLink) {
+              window.open(directLink, "_blank", "noopener,noreferrer");
+            }
           }}
           className="w-[320px] h-[50px] max-w-full mx-auto rounded-xl bg-white text-black font-extrabold text-sm hover:bg-gray-200 transition flex items-center justify-center"
         >
@@ -161,7 +159,9 @@ function AnimeInfoCard({ anime, title, episode }) {
   const banner = anime.banner || anime.cover || anime.background || poster;
 
   const description = cleanDescription(
-    anime.description || anime.animeInfo?.Overview || "No description available."
+    anime.description ||
+      anime.animeInfo?.Overview ||
+      "No description available."
   );
 
   const genres = anime.genres || anime.animeInfo?.Genres || [];
@@ -208,11 +208,13 @@ function AnimeInfoCard({ anime, title, episode }) {
                   {status}
                 </span>
               )}
+
               {type && (
                 <span className="px-2 py-1 rounded-full bg-white/10 text-zinc-300 text-xs">
                   {type}
                 </span>
               )}
+
               {year && (
                 <span className="px-2 py-1 rounded-full bg-white/10 text-zinc-300 text-xs">
                   {year}
@@ -227,7 +229,9 @@ function AnimeInfoCard({ anime, title, episode }) {
             {genres.slice(0, 5).map((genre) => (
               <Link
                 key={genre}
-                to={`/genre/${String(genre).toLowerCase().replace(/\s+/g, "-")}`}
+                to={`/genre/${String(genre)
+                  .toLowerCase()
+                  .replace(/\s+/g, "-")}`}
                 className="px-3 py-1 rounded-full bg-white text-black text-xs font-bold hover:bg-gray-200 transition"
               >
                 {genre}
@@ -300,6 +304,10 @@ export default function Watch() {
   const [supportClicked, setSupportClicked] = useState(false);
   const [allowPlayer, setAllowPlayer] = useState(false);
 
+  const [playerAdBlockEnabled, setPlayerAdBlockEnabled] = useState(() => {
+    return localStorage.getItem("playerAdBlockEnabled") !== "false";
+  });
+
   const title =
     anime?.title ||
     anime?.name ||
@@ -308,9 +316,7 @@ export default function Watch() {
     anime?.romajiTitle ||
     "Anime";
 
-  const correctSlug = anime
-    ? createAnimeSlug(title, anime.id || animeId)
-    : animeSlug;
+  const correctSlug = anime ? createAnimeSlug(title, anime.id || animeId) : animeSlug;
 
   const finalMalId =
     anime?.malId ||
@@ -369,6 +375,16 @@ export default function Watch() {
   const shouldShowSupportLayer = () => {
     const lastShown = Number(localStorage.getItem("supportLayerLastShown") || 0);
     return Date.now() - lastShown > SUPPORT_COOLDOWN;
+  };
+
+  const togglePlayerAdBlock = () => {
+    const next = !playerAdBlockEnabled;
+
+    setPlayerAdBlockEnabled(next);
+    localStorage.setItem("playerAdBlockEnabled", String(next));
+
+    setIframeLoaded(false);
+    setReloadKey((prev) => prev + 1);
   };
 
   useEffect(() => {
@@ -599,8 +615,7 @@ export default function Watch() {
     setIframeLoaded(false);
 
     const correctRangeIndex = ranges.findIndex(
-      (range) =>
-        Number(epNumber) >= range.start && Number(epNumber) <= range.end
+      (range) => Number(epNumber) >= range.start && Number(epNumber) <= range.end
     );
 
     if (correctRangeIndex !== -1) setEpisodeRange(correctRangeIndex);
@@ -657,10 +672,7 @@ export default function Watch() {
                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md px-4 py-6 overflow-y-auto">
                   <div className="w-full max-w-[520px] text-center my-auto">
                     <div className="mx-auto mb-4 flex h-12 w-12 sm:h-14 sm:w-14 items-center justify-center rounded-full bg-white text-black shadow-2xl">
-                      <FontAwesomeIcon
-                        icon={faHeart}
-                        className="text-lg sm:text-xl"
-                      />
+                      <FontAwesomeIcon icon={faHeart} className="text-lg sm:text-xl" />
                     </div>
 
                     <h2 className="text-2xl sm:text-4xl font-extrabold text-white mb-3 sm:mb-5 leading-tight">
@@ -698,25 +710,23 @@ export default function Watch() {
               )}
 
               {iframeUrl && !showSupportLayer ? (
-               <>
-  <div className="absolute top-3 left-3 z-30 bg-green-600 text-white px-3 py-2 rounded-lg text-xs sm:text-sm font-bold shadow-lg">
-    Ad-Block ON
-  </div>
-
-  <iframe
-    key={`${animeId}-${episode}-${selectedServer.id}-${selectedServer.type}-${reloadKey}`}
-    src={iframeUrl}
-    title={`${title} Episode ${episode}`}
-    className="w-full h-full bg-black"
-    allowFullScreen
-    scrolling="no"
-    frameBorder="0"
-    referrerPolicy="no-referrer"
-    sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-pointer-lock"
-    allow="autoplay; fullscreen; picture-in-picture"
-    onLoad={() => setIframeLoaded(true)}
-  />
-</>
+                <iframe
+                  key={`${animeId}-${episode}-${selectedServer.id}-${selectedServer.type}-${reloadKey}-${playerAdBlockEnabled}`}
+                  src={iframeUrl}
+                  title={`${title} Episode ${episode}`}
+                  className="w-full h-full bg-black"
+                  allowFullScreen
+                  scrolling="no"
+                  frameBorder="0"
+                  referrerPolicy={playerAdBlockEnabled ? "no-referrer" : undefined}
+                  sandbox={
+                    playerAdBlockEnabled
+                      ? "allow-scripts allow-same-origin allow-forms allow-presentation allow-pointer-lock"
+                      : undefined
+                  }
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  onLoad={() => setIframeLoaded(true)}
+                />
               ) : (
                 !streamLoading &&
                 !showSupportLayer && (
@@ -738,7 +748,7 @@ export default function Watch() {
             </div>
 
             <div className="bg-[#121212] border border-white/10 rounded-2xl p-4">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                 <div>
                   <h1 className="text-xl sm:text-2xl font-bold">{title}</h1>
                   <p className="text-gray-400 mt-1">Episode {episode}</p>
@@ -764,7 +774,23 @@ export default function Watch() {
               </div>
 
               <div className="mt-5">
-                <p className="text-sm text-gray-400 mb-3">Playback</p>
+                <div className="flex items-center justify-between gap-4 mb-3">
+                  <p className="text-sm text-gray-400">Playback</p>
+
+                  <button
+                    type="button"
+                    onClick={togglePlayerAdBlock}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs sm:text-sm font-extrabold transition ${
+                      playerAdBlockEnabled
+                        ? "bg-green-500 text-white border-green-400 hover:bg-green-600"
+                        : "bg-white/10 text-gray-300 border-white/10 hover:bg-white/15"
+                    }`}
+                    title="Blocks iframe popup/top-redirect ads only"
+                  >
+                    <FontAwesomeIcon icon={faShieldHalved} />
+                    {playerAdBlockEnabled ? "Ad-Block ON" : "Ad-Block OFF"}
+                  </button>
+                </div>
 
                 <div className="flex flex-wrap items-end gap-4">
                   <div>
@@ -868,11 +894,7 @@ export default function Watch() {
                           {ranges[episodeRange]?.end}
                         </span>
 
-                        <span
-                          className={`transition ${
-                            rangeOpen ? "rotate-180" : ""
-                          }`}
-                        >
+                        <span className={`transition ${rangeOpen ? "rotate-180" : ""}`}>
                           ▼
                         </span>
                       </button>
@@ -930,10 +952,7 @@ export default function Watch() {
                             : "bg-[#1b1b1b] text-white border-white/10 hover:bg-white/10"
                         }`}
                       >
-                        <FontAwesomeIcon
-                          icon={faPlay}
-                          className="text-[10px] mr-2"
-                        />
+                        <FontAwesomeIcon icon={faPlay} className="text-[10px] mr-2" />
                         {epNumber}
                       </button>
                     );
