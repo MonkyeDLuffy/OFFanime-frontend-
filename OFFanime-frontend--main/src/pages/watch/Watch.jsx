@@ -41,20 +41,15 @@ function cleanDescription(text = "") {
 
 function triggerMonetagPopunder() {
   try {
-    const oldScript = document.querySelector(
-      `script[data-zone="${MONETAG_ZONE_ID}"]`
-    );
+    const adUrl = "https://omg10.com/4/9773375";
 
-    if (oldScript) oldScript.remove();
+    const adWindow = window.open(adUrl, "_blank", "noopener,noreferrer");
 
-    const script = document.createElement("script");
-    script.dataset.zone = MONETAG_ZONE_ID;
-    script.src = "https://omg10.com/4/9773375";
-    script.async = true;
-
-    document.body.appendChild(script);
+    if (!adWindow) {
+      window.location.href = adUrl;
+    }
   } catch (error) {
-    console.error("Monetag popunder failed:", error);
+    console.error("Monetag direct link failed:", error);
   }
 }
 
