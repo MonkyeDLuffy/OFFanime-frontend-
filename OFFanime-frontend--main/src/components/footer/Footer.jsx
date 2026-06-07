@@ -12,7 +12,7 @@ function PremiumBannerAd() {
 
     adRef.current.innerHTML = "";
 
-    window.atOptions = {
+    const options = {
       key: "fa18fe18755cc0b110e4155f955a4c3e",
       format: "iframe",
       height: 50,
@@ -20,69 +20,55 @@ function PremiumBannerAd() {
       params: {},
     };
 
-    const script = document.createElement("script");
+    window.atOptions = options;
 
+    const script = document.createElement("script");
     script.src =
       "https://www.highperformanceformat.com/fa18fe18755cc0b110e4155f955a4c3e/invoke.js";
-
     script.async = true;
+    script.referrerPolicy = "no-referrer-when-downgrade";
 
     adRef.current.appendChild(script);
+
+    return () => {
+      if (adRef.current) {
+        adRef.current.innerHTML = "";
+      }
+
+      try {
+        delete window.atOptions;
+      } catch (error) {
+        window.atOptions = undefined;
+      }
+    };
   }, []);
 
   return (
     <div className="w-fit">
-      <div
-        className="
-          relative
-          overflow-hidden
-          rounded-2xl
-          border border-white/10
-          bg-gradient-to-br
-          from-[#111111]
-          via-[#161616]
-          to-[#0b0b0b]
-          shadow-[0_0_25px_rgba(255,255,255,0.04)]
-          backdrop-blur-xl
-          p-4
-        "
-      >
-        {/* glow */}
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#111111] via-[#161616] to-[#0b0b0b] shadow-[0_0_25px_rgba(255,255,255,0.04)] backdrop-blur-xl p-4">
         <div className="absolute inset-0 bg-white/[0.02] pointer-events-none" />
 
-        {/* top label */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-white/60 animate-pulse" />
-
             <span className="text-[11px] uppercase tracking-[0.25em] text-zinc-400 font-semibold">
-              Sponsored
+              Support OFFANIME
             </span>
           </div>
 
           <span className="text-[10px] text-zinc-500">
-            Support OFFANIME
+            Advertisement
           </span>
         </div>
 
-        {/* ad */}
         <div
           ref={adRef}
-          className="
-            w-[320px]
-            h-[50px]
-            overflow-hidden
-            rounded-xl
-            border border-white/5
-            bg-black/40
-            flex items-center justify-center
-          "
+          className="w-[320px] h-[50px] overflow-hidden rounded-xl border border-white/5 bg-black/40 flex items-center justify-center"
         />
       </div>
     </div>
   );
 }
-
 function Footer() {
   return (
     <footer className="w-full mt-auto">
