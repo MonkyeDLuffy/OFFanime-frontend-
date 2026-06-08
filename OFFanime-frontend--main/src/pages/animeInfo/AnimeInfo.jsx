@@ -50,7 +50,7 @@ function PremiumBannerAd() {
   }, []);
 
   return (
-    <div className="hidden lg:block w-full max-w-[430px]">
+    <div className="hidden xl:block w-full max-w-[430px]">
       <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-r from-[#101010] via-[#181818] to-[#101010] p-3 shadow-[0_0_25px_rgba(255,255,255,0.03)]">
         <div className="absolute inset-0 bg-gradient-to-r from-white/[0.03] via-transparent to-white/[0.03] pointer-events-none" />
 
@@ -300,13 +300,11 @@ export default function AnimeInfo() {
         jikanInfo={jikanInfo}
         tmdbInfo={tmdbInfo}
         tmdbLoading={tmdbLoading}
-        episodes={episodes}
-        episodesLoading={tabLoading && activeTab === "episodes"}
       />
 
       <div className="w-full px-3 sm:px-5 lg:px-6 xl:px-8 2xl:px-10 pb-16">
         <div className="w-full">
-          <div className="mt-8 border-b border-white/10 grid grid-cols-[minmax(0,1fr)_430px] gap-6 items-end max-lg:block">
+          <div className="mt-8 border-b border-white/10 grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_430px] gap-6 items-end">
             <div className="flex gap-8 overflow-x-auto">
               {TABS.map((tab) => (
                 <button
@@ -368,7 +366,7 @@ function MainSkeleton() {
               <div className="w-[185px] h-[430px] rounded-2xl bg-white/10 animate-pulse" />
 
               <div className="flex-1 space-y-5">
-                <div className="h-12 w-[40%] rounded-xl bg-white/10 animate-pulse" />
+                <div className="h-12 w-[32%] rounded-xl bg-white/10 animate-pulse" />
 
                 <div className="flex gap-3 flex-wrap">
                   <div className="h-8 w-20 rounded-lg bg-white/10 animate-pulse" />
@@ -410,12 +408,11 @@ function TabSkeleton({ activeTab }) {
     return (
       <div>
         <div className="h-8 w-36 rounded bg-white/10 animate-pulse mb-5" />
-
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
-          {Array.from({ length: 16 }).map((_, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+          {Array.from({ length: 15 }).map((_, i) => (
             <div
               key={i}
-              className="h-14 rounded-xl bg-[#141414] border border-white/10 animate-pulse"
+              className="h-[120px] rounded-2xl bg-[#141414] border border-white/10 animate-pulse"
             />
           ))}
         </div>
@@ -426,12 +423,11 @@ function TabSkeleton({ activeTab }) {
   return (
     <div>
       <div className="h-8 w-48 rounded bg-white/10 animate-pulse mb-5" />
-
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-        {Array.from({ length: 10 }).map((_, i) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-4">
+        {Array.from({ length: 14 }).map((_, i) => (
           <div
             key={i}
-            className="h-64 rounded-2xl bg-[#141414] border border-white/10 animate-pulse"
+            className="h-72 rounded-2xl bg-[#141414] border border-white/10 animate-pulse"
           />
         ))}
       </div>
