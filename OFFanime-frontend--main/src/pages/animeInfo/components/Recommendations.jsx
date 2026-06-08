@@ -5,23 +5,24 @@ export default function Recommendations({ data = [] }) {
   if (!data.length) return null;
 
   return (
-    <div className="mt-12 mb-12">
+    <div className="mt-10 mb-12">
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-2xl font-bold">Recommended for You</h2>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-5">
         {data.map((anime) => (
           <Link
             key={anime.id}
             to={`/${createAnimeSlug(anime.title, anime.id)}`}
-            className="group"
+            className="group min-w-0"
           >
-            <div className="relative overflow-hidden rounded-xl bg-white/5 border border-white/10">
+            <div className="relative overflow-hidden rounded-2xl bg-white/5 border border-white/10">
               <img
                 src={anime.poster || anime.image}
                 alt={anime.title}
-                className="w-full h-[260px] object-cover group-hover:scale-105 transition duration-300"
+                className="w-full h-[265px] object-cover group-hover:scale-105 transition duration-300"
+                loading="lazy"
               />
 
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
@@ -31,7 +32,7 @@ export default function Recommendations({ data = [] }) {
               </span>
             </div>
 
-            <h3 className="mt-3 font-semibold line-clamp-1">
+            <h3 className="mt-3 font-semibold line-clamp-2 min-h-[42px]">
               {anime.title}
             </h3>
 
