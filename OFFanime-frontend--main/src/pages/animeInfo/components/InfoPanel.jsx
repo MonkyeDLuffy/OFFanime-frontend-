@@ -2,7 +2,6 @@ import {
   faCalendarDays,
   faClock,
   faClosedCaptioning,
-  faMicrophone,
   faSignal,
   faTv,
   faForward,
@@ -26,20 +25,12 @@ export default function InfoPanel({ anime, episodes = [] }) {
     anime?.episodes ||
     anime?.totalEpisodes ||
     null;
-  const dubEpisodes =
-    info.Dub ||
-    info.Dubbed ||
-    anime?.dubEpisodes ||
-    anime?.dubEpisode ||
-    anime?.tvInfo?.dub ||
-    null;
 
   const nextEpisode = getNextEpisodeInfo(anime);
   const studios = info.Studios || anime?.studios || [];
 
   const data = [
     { label: "Episodes", value: totalEpisodes, icon: faClosedCaptioning },
-    { label: "Dub Episodes", value: dubEpisodes || "Check", icon: faMicrophone },
     { label: "Status", value: status, icon: faSignal },
     { label: "Type", value: type, icon: faTv },
     { label: "Duration", value: duration, icon: faClock },
@@ -47,20 +38,17 @@ export default function InfoPanel({ anime, episodes = [] }) {
   ].filter((item) => item.value);
 
   return (
-    <div className="mt-10">
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+    <div className="mt-8">
+      <div className="flex flex-wrap gap-x-8 gap-y-4">
         {data.map((item) => (
-          <div
-            key={item.label}
-            className="group bg-white/5 border border-white/10 rounded-xl px-4 py-3 hover:bg-white/10 hover:border-white/25 hover:-translate-y-1 transition duration-300"
-          >
-            <div className="flex items-center gap-2 text-gray-400 mb-2">
+          <div key={item.label} className="min-w-[120px]">
+            <div className="flex items-center gap-2 text-gray-400 mb-1">
               <FontAwesomeIcon icon={item.icon} className="text-xs" />
               <p className="text-[10px] uppercase tracking-[0.16em]">
                 {item.label}
               </p>
             </div>
-            <p className="font-black text-sm text-white line-clamp-1">
+            <p className="font-black text-sm text-white break-words">
               {item.value}
             </p>
           </div>
@@ -68,19 +56,19 @@ export default function InfoPanel({ anime, episodes = [] }) {
       </div>
 
       {nextEpisode && (
-        <div className="mt-5 bg-white text-black border border-white rounded-xl px-4 py-3">
-          <div className="flex items-center gap-2 text-black/60 mb-1">
+        <div className="mt-5">
+          <div className="flex items-center gap-2 text-gray-400 mb-1">
             <FontAwesomeIcon icon={faForward} className="text-xs" />
             <p className="text-[10px] uppercase tracking-[0.16em]">
               Next Episode
             </p>
           </div>
-          <p className="text-sm font-black">{nextEpisode}</p>
+          <p className="text-sm font-black text-white">{nextEpisode}</p>
         </div>
       )}
 
       {studios?.length > 0 && (
-        <div className="mt-5 bg-white/5 border border-white/10 rounded-xl px-4 py-3">
+        <div className="mt-5">
           <p className="text-[10px] uppercase tracking-[0.16em] text-gray-400 mb-1">
             Studios
           </p>
