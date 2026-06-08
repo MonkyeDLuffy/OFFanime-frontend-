@@ -34,22 +34,31 @@ const DEFAULT_SERVERS = [
 
 const MONETAG_ZONE_ID = "11076695";
 const ADSTERRA_KEY = "fa18fe18755cc0b110e4155f955a4c3e";
+const SUPPORT_DIRECT_AD_URL = "https://omg10.com/4/9773375";
 
 function cleanDescription(text = "") {
   return String(text).replace(/<[^>]*>/g, "").replace(/\n/g, " ").trim();
 }
 
-function triggerMonetagPopunder() {
+function triggerSupportDirectAd() {
   try {
-    const adUrl = "https://omg10.com/4/9773375";
+    // IMPORTANT:
+    // Never use window.location.href here.
+    // That was replacing OFFANIME with the ad page and causing the ad to appear again
+    // when users pressed Back.
+    const adWindow = window.open("about:blank", "_blank");
 
-    const adWindow = window.open(adUrl, "_blank", "noopener,noreferrer");
-
-    if (!adWindow) {
-      window.location.href = adUrl;
+    if (adWindow) {
+      adWindow.opener = null;
+      adWindow.location.href = SUPPORT_DIRECT_AD_URL;
+      return true;
     }
+
+    console.warn("Support ad popup was blocked by the browser.");
+    return false;
   } catch (error) {
-    console.error("Monetag direct link failed:", error);
+    console.error("Support direct ad failed:", error);
+    return false;
   }
 }
 
@@ -115,7 +124,7 @@ function PremiumBannerAd({ directLink = "" }) {
         <button
           type="button"
           onClick={() => {
-            triggerMonetagPopunder();
+            triggerSupportDirectAd();
             if (directLink) {
               window.open(directLink, "_blank", "noopener,noreferrer");
             }
@@ -298,6 +307,7 @@ export default function Watch() {
   const [supportCountdown, setSupportCountdown] = useState(3);
   const [supportClicked, setSupportClicked] = useState(false);
   const [allowPlayer, setAllowPlayer] = useState(false);
+  const supportAdOpeningRef = useRef(false);
 
   const [playerAdBlockEnabled, setPlayerAdBlockEnabled] = useState(() => {
     return localStorage.getItem("playerAdBlockEnabled") !== "false";
@@ -518,22 +528,30 @@ export default function Watch() {
   }, [anime, animeId, episode, title]);
 
   const handleSupportContinue = () => {
-    if (supportClicked) return;
+    if (supportClicked || supportAdOpeningRef.current) return;
 
-    triggerMonetagPopunder();
-
+    supportAdOpeningRef.current = true;
     setSupportClicked(true);
     setSupportCountdown(3);
+
+    // Open only once, only in a new tab.
+    // No same-tab fallback, so OFFANIME will not be replaced by the ad page.
+    triggerSupportDirectAd();
 
     const timer = setInterval(() => {
       setSupportCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
+
           localStorage.setItem("supportLayerLastShown", String(Date.now()));
+
           setShowSupportLayer(false);
           setAllowPlayer(true);
           setSupportClicked(false);
           setSupportCountdown(3);
+
+          supportAdOpeningRef.current = false;
+
           return 3;
         }
 
