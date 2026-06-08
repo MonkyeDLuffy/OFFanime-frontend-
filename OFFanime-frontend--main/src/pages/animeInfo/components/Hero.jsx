@@ -4,24 +4,17 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlay,
   faXmark,
-  faClock,
   faTv,
+  faSignal,
   faCalendarDays,
+  faClock,
   faClosedCaptioning,
   faMicrophone,
-  faSignal,
-  faForward,
+  faForwardStep,
 } from "@fortawesome/free-solid-svg-icons";
 import { createAnimeSlug } from "@/src/utils/slug.utils";
 
-function Hero({
-  anime,
-  jikanInfo,
-  tmdbInfo,
-  tmdbLoading,
-  episodes = [],
-  episodesLoading = false,
-}) {
+function Hero({ anime, jikanInfo, tmdbInfo, tmdbLoading }) {
   const [expanded, setExpanded] = useState(false);
   const [trailerOpen, setTrailerOpen] = useState(false);
 
@@ -69,43 +62,68 @@ function Hero({
     ? jikanInfo.genres
     : anime?.genres || [];
 
+  const trailerUrl = getTrailerUrl(jikanInfo?.trailer);
+
   const type = jikanInfo?.type || anime?.type || anime?.format || "TV";
-  const status = jikanInfo?.status || anime?.status || "Unknown";
-  const year = jikanInfo?.year || anime?.year || anime?.seasonYear || "";
-  const duration =
-    jikanInfo?.duration ||
-    anime?.duration ||
-    anime?.animeInfo?.Duration ||
-    "";
-  const rating = jikanInfo?.rating || anime?.rating || "";
+  const status = cleanStatus(jikanInfo?.status || anime?.status || "Unknown");
+  const year = jikanInfo?.year || anime?.year || anime?.seasonYear || "N/A";
+  const duration = cleanDuration(jikanInfo?.duration || anime?.duration);
+  const rating = jikanInfo?.rating || anime?.rating || null;
 
   const totalEpisodes =
-    episodes?.length ||
-    Number(jikanInfo?.episodes) ||
-    Number(anime?.episodes) ||
-    Number(anime?.totalEpisodes) ||
-    anime?.animeInfo?.Episodes ||
+    jikanInfo?.episodes ||
+    anime?.episodes ||
+    anime?.totalEpisodes ||
+    tmdbInfo?.totalReturned ||
     "N/A";
 
-  const dubEpisodes =
-    anime?.dubEpisodes ||
-    anime?.dubEpisode ||
-    anime?.animeInfo?.Dub ||
-    anime?.animeInfo?.Dubbed ||
-    anime?.tvInfo?.dub ||
-    tmdbInfo?.dubEpisodes ||
-    null;
+  const dubEpisodes = getDubEpisodes(anime, jikanInfo);
+  const nextEpisode = getNextEpisode(anime, jikanInfo);
 
-  const nextEpisode = useMemo(
-    () => getNextEpisodeInfo(anime, jikanInfo),
-    [anime, jikanInfo]
-  );
+  const metaItems = [
+    { icon: faTv, value: type },
+    { icon: faSignal, value: status },
+    { icon: faCalendarDays, value: year },
+    { icon: faClock, value: duration },
+    { icon: null, value: rating },
+  ].filter((item) => item.value && item.value !== "N/A");
 
-  const trailerUrl = getTrailerUrl(jikanInfo?.trailer);
+  const statItems = [
+    {
+      label: "Episodes",
+      value: totalEpisodes,
+      icon: faClosedCaptioning,
+      light: false,
+    },
+    {
+      label: "Dub Episodes",
+      value: dubEpisodes,
+      icon: faMicrophone,
+      light: false,
+    },
+    {
+      label: "Status",
+      value: status,
+      icon: faSignal,
+      light: false,
+    },
+    {
+      label: "Duration",
+      value: duration,
+      icon: faClock,
+      light: false,
+    },
+    {
+      label: "Next EP",
+      value: nextEpisode,
+      icon: faForwardStep,
+      light: true,
+    },
+  ];
 
   return (
     <>
-      <section className="relative w-full overflow-hidden bg-[#050505] min-h-[620px] md:min-h-[680px]">
+      <section className="relative w-full overflow-hidden bg-[#050505] min-h-[760px] lg:min-h-[820px]">
         <div className="absolute inset-0">
           {banner && (
             <img
@@ -114,21 +132,22 @@ function Hero({
               fetchPriority="high"
               loading="eager"
               decoding="async"
-              className="absolute inset-0 w-full h-full object-cover object-center scale-[1.04] select-none pointer-events-none"
+              className="absolute inset-0 w-full h-full object-cover object-center scale-[1.02] select-none pointer-events-none"
             />
           )}
 
-          <div className="absolute inset-0 bg-black/52" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-black/45 to-black/10" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-transparent to-[#050505]" />
-          <div className="absolute inset-0 backdrop-blur-[1.2px]" />
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-black/55 to-black/20" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-[#050505]" />
+          <div className="absolute inset-y-0 left-0 w-[18%] bg-gradient-to-r from-[#050505] to-transparent" />
+          <div className="absolute inset-y-0 right-0 w-[18%] bg-gradient-to-l from-[#050505] to-transparent" />
         </div>
 
-        <div className="relative z-10 w-full px-4 sm:px-6 lg:px-10 pt-[110px] md:pt-[125px]">
-          <div className="max-w-[1620px] mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-[185px_1fr] xl:grid-cols-[205px_1fr] gap-6 md:gap-8 items-start">
+        <div className="relative z-10 w-full px-4 sm:px-8 lg:px-14 2xl:px-20 pt-[125px]">
+          <div className="w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-[210px_1fr] xl:grid-cols-[230px_1fr] gap-7 xl:gap-10 items-start">
               <div className="relative mx-auto lg:mx-0">
-                <div className="relative w-[155px] sm:w-[175px] xl:w-[195px] h-[225px] sm:h-[255px] xl:h-[285px] rounded-[18px] overflow-hidden border border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.85)] bg-black/45 backdrop-blur-xl">
+                <div className="relative w-[185px] sm:w-[200px] xl:w-[215px] h-[360px] sm:h-[390px] xl:h-[420px] rounded-[22px] overflow-hidden border border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.85)] bg-black/40 backdrop-blur-xl">
                   {poster && (
                     <img
                       src={poster}
@@ -139,13 +158,13 @@ function Hero({
                       className="w-full h-full object-cover object-center"
                     />
                   )}
-                  <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/80 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/80 to-transparent" />
                 </div>
               </div>
 
-              <div className="pt-1 max-w-[1060px] text-center lg:text-left">
+              <div className="pt-1 max-w-[980px]">
                 {tmdbLoading ? (
-                  <div className="h-[80px]" />
+                  <div className="h-[90px]" />
                 ) : logo ? (
                   <img
                     src={logo}
@@ -153,37 +172,31 @@ function Hero({
                     loading="eager"
                     fetchPriority="high"
                     decoding="async"
-                    className="mx-auto lg:mx-0 max-w-[300px] sm:max-w-[370px] md:max-w-[430px] max-h-[105px] md:max-h-[125px] object-contain object-left drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)]"
+                    className="max-w-[360px] sm:max-w-[430px] max-h-[120px] sm:max-h-[145px] object-contain object-left drop-shadow-[0_10px_30px_rgba(0,0,0,0.9)]"
                   />
                 ) : (
-                  <h1 className="text-3xl sm:text-5xl md:text-6xl font-black leading-[0.98] text-white drop-shadow-[0_5px_30px_rgba(0,0,0,0.9)] max-w-[800px] mx-auto lg:mx-0">
+                  <h1 className="text-4xl md:text-5xl xl:text-6xl font-black leading-[0.95] text-white drop-shadow-[0_5px_30px_rgba(0,0,0,0.9)]">
                     {title}
                   </h1>
                 )}
 
-                <div className="mt-5 flex flex-wrap justify-center lg:justify-start gap-2">
-                  <MetaPill icon={faTv} label={type} />
-                  <MetaPill icon={faSignal} label={status} />
-                  {year && <MetaPill icon={faCalendarDays} label={year} />}
-                  {duration && <MetaPill icon={faClock} label={duration} />}
-                  {rating && <MetaPill label={rating} />}
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {metaItems.map((item, index) => (
+                    <MetaPill key={`${item.value}-${index}`} icon={item.icon} value={item.value} />
+                  ))}
                 </div>
 
                 {genres.length > 0 && (
-                  <div className="mt-4 flex flex-wrap justify-center lg:justify-start gap-2">
-                    {genres.slice(0, 7).map((genre) => {
-                      const genreName =
-                        typeof genre === "string" ? genre : genre?.name;
-
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {genres.slice(0, 6).map((genre) => {
+                      const genreName = typeof genre === "string" ? genre : genre?.name;
                       if (!genreName) return null;
 
                       return (
                         <Link
                           key={genreName}
-                          to={`/genre/${genreName
-                            .toLowerCase()
-                            .replaceAll(" ", "-")}`}
-                          className="px-3 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-md text-xs text-white hover:bg-white hover:text-black hover:border-white transition"
+                          to={`/genre/${genreName.toLowerCase().replaceAll(" ", "-")}`}
+                          className="px-3 py-1 rounded-full bg-black/35 border border-white/10 backdrop-blur-md text-xs text-white hover:bg-white hover:text-black transition"
                         >
                           {genreName}
                         </Link>
@@ -192,26 +205,16 @@ function Hero({
                   </div>
                 )}
 
-                <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 max-w-[920px] mx-auto lg:mx-0">
-                  <StatCard
-                    icon={faClosedCaptioning}
-                    label="Episodes"
-                    value={episodesLoading ? "..." : totalEpisodes}
-                  />
-                  <StatCard
-                    icon={faMicrophone}
-                    label="Dub Episodes"
-                    value={dubEpisodes || "Check"}
-                  />
-                  <StatCard icon={faSignal} label="Status" value={status} />
-                  <StatCard icon={faClock} label="Duration" value={duration || "N/A"} />
-                  <StatCard icon={faForward} label="Next Ep" value={nextEpisode.short} highlight />
+                <div className="mt-7 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3 max-w-[930px]">
+                  {statItems.map((item) => (
+                    <InfoBlock key={item.label} {...item} />
+                  ))}
                 </div>
 
-                <div className="mt-6 flex flex-wrap justify-center lg:justify-start gap-3">
+                <div className="mt-6 flex flex-wrap gap-3">
                   <Link
                     to={`/watch/${slug}?ep=1`}
-                    className="inline-flex items-center gap-3 rounded-full bg-white text-black px-7 py-3 text-sm font-black hover:bg-gray-200 transition-all shadow-[0_15px_40px_rgba(255,255,255,0.12)]"
+                    className="inline-flex items-center gap-3 rounded-full bg-white text-black px-7 py-3 text-sm font-black hover:bg-gray-200 transition-all"
                   >
                     <FontAwesomeIcon icon={faPlay} />
                     Watch Now
@@ -220,7 +223,7 @@ function Hero({
                   {trailerUrl && (
                     <button
                       onClick={() => setTrailerOpen(true)}
-                      className="rounded-full bg-black/40 border border-white/10 text-white px-7 py-3 text-sm font-bold hover:bg-white/10 hover:border-white/25 transition-all backdrop-blur-md"
+                      className="rounded-full bg-black/35 border border-white/10 text-white px-7 py-3 text-sm font-bold hover:bg-white/10 transition-all backdrop-blur-md"
                     >
                       Trailer
                     </button>
@@ -228,7 +231,7 @@ function Hero({
                 </div>
 
                 <div
-                  className={`mt-6 text-gray-300 text-[14px] md:text-[16px] leading-[1.75] max-w-[980px] mx-auto lg:mx-0 overflow-hidden transition-all duration-500 ${
+                  className={`mt-7 text-gray-300 text-[15px] md:text-[16px] leading-[1.75] max-w-[980px] overflow-hidden transition-all duration-500 ${
                     expanded ? "max-h-[420px]" : "max-h-[112px]"
                   }`}
                 >
@@ -237,17 +240,10 @@ function Hero({
 
                 <button
                   onClick={() => setExpanded((prev) => !prev)}
-                  className="mt-4 text-xs uppercase tracking-[0.18em] text-gray-400 hover:text-white transition font-bold"
+                  className="mt-5 text-xs uppercase tracking-[0.18em] text-gray-400 hover:text-white transition font-bold"
                 >
                   {expanded ? "Show Less" : "Show More"}
                 </button>
-
-                {nextEpisode.full && (
-                  <div className="mt-5 inline-flex flex-wrap items-center gap-2 rounded-2xl bg-black/40 border border-white/10 backdrop-blur-xl px-4 py-3 text-sm text-gray-300">
-                    <span className="text-white font-bold">Next Episode:</span>
-                    <span>{nextEpisode.full}</span>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -278,38 +274,29 @@ function Hero({
   );
 }
 
-function MetaPill({ icon, label }) {
-  if (!label) return null;
-
+function MetaPill({ icon, value }) {
   return (
-    <div className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/35 px-3 py-1.5 text-xs text-gray-300 backdrop-blur-md transition hover:border-white/25 hover:bg-white/10 hover:text-white">
-      {icon && <FontAwesomeIcon icon={icon} className="text-[11px] text-white/80" />}
-      <span>{label}</span>
+    <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-black/35 px-3 py-1.5 text-xs text-gray-200 backdrop-blur-md hover:bg-white/10 hover:border-white/25 transition">
+      {icon && <FontAwesomeIcon icon={icon} className="text-[11px] text-gray-300" />}
+      <span className="line-clamp-1">{value}</span>
     </div>
   );
 }
 
-function StatCard({ icon, label, value, highlight = false }) {
+function InfoBlock({ label, value, icon, light = false }) {
   return (
     <div
-      className={`group rounded-2xl border backdrop-blur-xl px-4 py-3 transition duration-300 hover:-translate-y-1 ${
-        highlight
+      className={`group rounded-2xl border backdrop-blur-xl px-4 py-3 min-h-[72px] transition-all duration-300 ${
+        light
           ? "bg-white text-black border-white hover:bg-gray-200"
-          : "bg-black/38 border-white/10 hover:bg-white/10 hover:border-white/25"
+          : "bg-black/35 text-white border-white/10 hover:bg-white/10 hover:border-white/25"
       }`}
     >
-      <div className="flex items-center gap-2">
-        {icon && (
-          <FontAwesomeIcon
-            icon={icon}
-            className={`text-sm ${highlight ? "text-black" : "text-white/80"}`}
-          />
-        )}
-        <p className={`text-[10px] uppercase tracking-[0.14em] ${highlight ? "text-black/65" : "text-gray-500"}`}>
-          {label}
-        </p>
-      </div>
-      <p className={`mt-2 font-black text-lg leading-tight line-clamp-1 ${highlight ? "text-black" : "text-white"}`}>
+      <p className={`flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] ${light ? "text-black/60" : "text-gray-500 group-hover:text-gray-300"}`}>
+        {icon && <FontAwesomeIcon icon={icon} className="text-[11px]" />}
+        {label}
+      </p>
+      <p className="mt-2 text-[15px] sm:text-base font-black leading-tight line-clamp-1">
         {value || "N/A"}
       </p>
     </div>
@@ -318,82 +305,90 @@ function StatCard({ icon, label, value, highlight = false }) {
 
 function getTrailerUrl(trailer) {
   if (!trailer) return null;
-
   if (trailer.embedUrl) return trailer.embedUrl;
-
-  if (trailer.youtube_id) {
-    return `https://www.youtube.com/embed/${trailer.youtube_id}`;
-  }
-
-  if (trailer.youtubeId) {
-    return `https://www.youtube.com/embed/${trailer.youtubeId}`;
-  }
+  if (trailer.youtube_id) return `https://www.youtube.com/embed/${trailer.youtube_id}`;
 
   if (trailer.url) {
     const match = trailer.url.match(/(?:v=|youtu\.be\/)([^&?/]+)/);
-    if (match?.[1]) {
-      return `https://www.youtube.com/embed/${match[1]}`;
-    }
+    if (match?.[1]) return `https://www.youtube.com/embed/${match[1]}`;
   }
 
   return null;
 }
 
-function getNextEpisodeInfo(anime, jikanInfo) {
-  const next =
-    anime?.nextAiringEpisode ||
-    anime?.airingEpisode ||
-    anime?.animeInfo?.nextAiringEpisode ||
-    null;
+function cleanStatus(value = "") {
+  const text = String(value).replaceAll("_", " ").trim();
+  if (!text) return "Unknown";
 
-  const episodeNumber = next?.episode || next?.number || null;
-  const airingAt = next?.airingAt || next?.timeUntilAiring || null;
-
-  if (episodeNumber && next?.airingAt) {
-    return {
-      short: `EP ${episodeNumber}`,
-      full: `EP ${episodeNumber} drops in ${formatCountdown(next.airingAt)}`,
-    };
+  const lower = text.toLowerCase();
+  if (lower.includes("currently airing") || lower.includes("releasing") || lower.includes("airing")) {
+    return "Airing";
   }
+  if (lower.includes("finished") || lower.includes("completed")) return "Completed";
+  if (lower.includes("not yet")) return "Upcoming";
 
-  if (episodeNumber) {
-    return {
-      short: `EP ${episodeNumber}`,
-      full: `EP ${episodeNumber} coming soon`,
-    };
-  }
-
-  if (jikanInfo?.broadcast?.string) {
-    return {
-      short: "Schedule",
-      full: jikanInfo.broadcast.string,
-    };
-  }
-
-  if (/airing|releasing|currently/i.test(String(anime?.status || jikanInfo?.status || ""))) {
-    return {
-      short: "Soon",
-      full: "Next episode date will update soon",
-    };
-  }
-
-  return {
-    short: "N/A",
-    full: "",
-  };
+  return text
+    .split(" ")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
 }
 
-function formatCountdown(airingAt) {
-  const now = Math.floor(Date.now() / 1000);
-  const seconds = Number(airingAt) - now;
+function cleanDuration(value) {
+  if (!value) return "N/A";
+  const text = String(value);
+  if (/min/i.test(text)) return text.replace("per ep", "").trim();
+  const num = Number(text);
+  if (Number.isFinite(num)) return `${num} min`;
+  return text;
+}
 
-  if (!Number.isFinite(seconds) || seconds <= 0) return "soon";
+function getDubEpisodes(anime, jikanInfo) {
+  const candidates = [
+    anime?.dubEpisodes,
+    anime?.dubEpisode,
+    anime?.dub,
+    anime?.tvInfo?.dub,
+    anime?.animeInfo?.Dub,
+    anime?.animeInfo?.Dubbed,
+    jikanInfo?.dubEpisodes,
+  ];
 
-  const days = Math.floor(seconds / 86400);
-  const hours = Math.floor((seconds % 86400) / 3600);
+  for (const item of candidates) {
+    if (item === undefined || item === null || item === "") continue;
+    const num = Number(String(item).replace(/[^0-9]/g, ""));
+    if (Number.isFinite(num) && num > 0) return num;
+  }
 
-  if (days > 0) return `${days}d ${hours}h`;
-  return `${hours}h`;
+  return "N/A";
+}
+
+function getNextEpisode(anime, jikanInfo) {
+  const next =
+    anime?.nextAiringEpisode ||
+    anime?.nextEpisode ||
+    jikanInfo?.nextAiringEpisode ||
+    jikanInfo?.broadcast?.string ||
+    anime?.broadcast?.string ||
+    anime?.broadcast;
+
+  if (!next) return "Schedule";
+
+  if (typeof next === "string") return next;
+
+  const ep = next.episode ? `EP ${next.episode}` : "Next EP";
+
+  if (next.airingAt) {
+    const date = new Date(Number(next.airingAt) * 1000);
+    if (!Number.isNaN(date.getTime())) {
+      return `${ep} • ${date.toLocaleString("en-IN", {
+        weekday: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      })}`;
+    }
+  }
+
+  return ep;
 }
 
 export default memo(Hero);
