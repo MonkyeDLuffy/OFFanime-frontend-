@@ -235,6 +235,7 @@ export default function AnimeInfo() {
           const data = Array.isArray(res)
             ? res
             : res?.results || res?.episodes || [];
+
           if (alive) setEpisodes(data);
         }
 
@@ -243,6 +244,7 @@ export default function AnimeInfo() {
           const data = Array.isArray(res)
             ? res
             : res?.results || res?.seasons || [];
+
           if (alive) setSeasons(data);
         }
 
@@ -251,6 +253,7 @@ export default function AnimeInfo() {
           const data = Array.isArray(res)
             ? res
             : res?.results || res?.recommendations || [];
+
           if (alive) setRecommendations(data);
         }
 
@@ -362,13 +365,13 @@ function MainSkeleton() {
     <div className="min-h-screen bg-[#050505] text-white pt-24 pb-16">
       <div className="w-full px-4 sm:px-6 lg:px-10">
         <div className="max-w-[1620px] mx-auto">
-          <div className="relative overflow-hidden rounded-3xl bg-[#111] border border-white/10 min-h-[430px]">
+          <div className="relative overflow-hidden rounded-3xl bg-[#111] border border-white/10 min-h-[520px]">
             <div className="absolute inset-0 bg-gradient-to-r from-[#151515] via-[#222] to-[#151515] opacity-70 animate-pulse" />
 
             <div className="relative z-10 flex flex-col md:flex-row gap-8 p-8 md:p-12">
-              <div className="w-[180px] h-[260px] rounded-2xl bg-white/10 animate-pulse" />
+              <div className="w-[185px] h-[430px] rounded-2xl bg-white/10 animate-pulse" />
 
-              <div className="flex-1 max-w-[900px] space-y-5">
+              <div className="flex-1 max-w-[980px] space-y-5">
                 <div className="h-12 w-[58%] rounded-xl bg-white/10 animate-pulse" />
 
                 <div className="flex gap-3">
@@ -377,11 +380,11 @@ function MainSkeleton() {
                   <div className="h-8 w-20 rounded-lg bg-white/10 animate-pulse" />
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 max-w-[900px]">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 max-w-[980px]">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <div
                       key={i}
-                      className="h-20 rounded-2xl bg-white/10 animate-pulse"
+                      className="h-24 rounded-2xl bg-white/10 animate-pulse"
                     />
                   ))}
                 </div>
