@@ -26,7 +26,9 @@ export default function EpisodeGrid({ id, anime, episodes = [], tmdbInfo }) {
   }, [tmdbInfo]);
 
   const getEpNumber = (ep, index) => {
-    return Number(ep.number || ep.episode || ep.episodeId || ep.episodeNumber || index + 1);
+    return Number(
+      ep.number || ep.episode || ep.episodeId || ep.episodeNumber || index + 1
+    );
   };
 
   const sortedEpisodes = useMemo(() => {
@@ -38,6 +40,8 @@ export default function EpisodeGrid({ id, anime, episodes = [], tmdbInfo }) {
   }, [episodes]);
 
   const ranges = useMemo(() => {
+    if (!sortedEpisodes.length) return [];
+
     const maxEp = Math.max(
       ...sortedEpisodes.map((ep, index) => getEpNumber(ep, index))
     );
@@ -45,10 +49,8 @@ export default function EpisodeGrid({ id, anime, episodes = [], tmdbInfo }) {
     if (!maxEp || maxEp < 1) return [];
 
     const result = [];
-
     for (let start = 1; start <= maxEp; start += RANGE_SIZE) {
       const end = Math.min(start + RANGE_SIZE - 1, maxEp);
-
       result.push({
         start,
         end,
@@ -78,12 +80,12 @@ export default function EpisodeGrid({ id, anime, episodes = [], tmdbInfo }) {
   }
 
   return (
-    <div className="mt-8">
+    <div className="mt-6 w-full">
       {ranges.length > 1 && (
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-3 mb-4 flex-wrap">
             <span className="text-xs uppercase tracking-[0.18em] text-gray-500 font-black">
-              Episode Range:
+              Episode Range
             </span>
 
             <span className="text-white text-sm font-bold">
@@ -111,7 +113,7 @@ export default function EpisodeGrid({ id, anime, episodes = [], tmdbInfo }) {
 
       <h2 className="text-2xl font-black mb-5">Episodes</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
         {visibleEpisodes.map((ep, index) => {
           const epNo = getEpNumber(ep, index);
           const tmdbEp = tmdbEpisodesMap[epNo];
@@ -145,10 +147,10 @@ export default function EpisodeGrid({ id, anime, episodes = [], tmdbInfo }) {
             <Link
               key={ep.id || ep.session || `${id}-${epNo}`}
               to={`/watch/${animeSlug}?ep=${epNo}`}
-              className="group relative h-[120px] overflow-hidden rounded-xl bg-[#101010] border border-white/10 hover:border-white/25 transition"
+              className="group relative h-[118px] overflow-hidden rounded-2xl bg-[#0f0f10] border border-white/10 hover:border-white/25 transition"
             >
               <div className="relative z-10 h-full flex items-center gap-4 p-3">
-                <div className="relative w-[130px] h-[78px] shrink-0 overflow-hidden rounded-lg bg-white/5">
+                <div className="relative w-[132px] h-[80px] shrink-0 overflow-hidden rounded-xl bg-white/5">
                   {image ? (
                     <img
                       src={image}
@@ -158,7 +160,7 @@ export default function EpisodeGrid({ id, anime, episodes = [], tmdbInfo }) {
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-white/10 via-white/5 to-black flex items-center justify-center">
-                      <span className="text-xs text-gray-500 font-bold">
+                      <span className="text-xs text-gray-400 font-bold">
                         EP {epNo}
                       </span>
                     </div>
@@ -166,7 +168,10 @@ export default function EpisodeGrid({ id, anime, episodes = [], tmdbInfo }) {
                 </div>
 
                 <div className="min-w-0 flex-1 pr-8">
-                  <h3 className="text-white font-bold text-[15px] leading-snug line-clamp-2">
+                  <p className="text-[11px] uppercase tracking-[0.14em] text-gray-400 mb-1">
+                    Episode {epNo}
+                  </p>
+                  <h3 className="text-white font-bold text-[14px] leading-snug line-clamp-2">
                     {epTitle}
                   </h3>
                 </div>
