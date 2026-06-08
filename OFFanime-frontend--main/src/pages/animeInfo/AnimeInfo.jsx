@@ -44,7 +44,7 @@ function PremiumBannerAd() {
       script.async = true;
 
       adRef.current.appendChild(script);
-    }, 800);
+    }, 900);
 
     return () => clearTimeout(timer);
   }, []);
@@ -295,58 +295,62 @@ export default function AnimeInfo() {
   }
 
   return (
-    <div className="bg-[#0a0a0a] text-white min-h-screen">
+    <div className="bg-[#050505] text-white min-h-screen">
       <Hero
         anime={anime}
         jikanInfo={jikanInfo}
         tmdbInfo={tmdbInfo}
         tmdbLoading={tmdbLoading}
+        episodes={episodes}
+        episodesLoading={tabLoading && activeTab === "episodes"}
       />
 
-      <div className="max-w-7xl mx-auto px-6 pb-16">
-        <div className="mt-8 border-b border-white/10 grid grid-cols-[1fr_430px] gap-6 items-end max-lg:block">
-          <div className="flex gap-8 overflow-x-auto">
-            {TABS.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`pb-4 text-sm md:text-base font-semibold whitespace-nowrap transition ${
-                  activeTab === tab.id
-                    ? "text-white border-b-2 border-white"
-                    : "text-gray-500 hover:text-white"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+      <div className="w-full px-4 sm:px-6 lg:px-10 pb-16">
+        <div className="max-w-[1620px] mx-auto">
+          <div className="mt-8 border-b border-white/10 grid grid-cols-[1fr_430px] gap-6 items-end max-lg:block">
+            <div className="flex gap-8 overflow-x-auto">
+              {TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`pb-4 text-sm md:text-base font-semibold whitespace-nowrap transition ${
+                    activeTab === tab.id
+                      ? "text-white border-b-2 border-white"
+                      : "text-gray-500 hover:text-white"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="pb-4 w-full flex justify-end">
+              <PremiumBannerAd />
+            </div>
           </div>
 
-          <div className="pb-4 w-full flex justify-end">
-            <PremiumBannerAd />
+          <div className="mt-8">
+            {tabLoading ? (
+              <TabSkeleton activeTab={activeTab} />
+            ) : (
+              <>
+                {activeTab === "episodes" && (
+                  <EpisodeGrid
+                    id={id}
+                    anime={anime}
+                    episodes={episodes}
+                    tmdbInfo={tmdbInfo}
+                  />
+                )}
+
+                {activeTab === "relations" && <Seasons data={seasons} />}
+
+                {activeTab === "recommendations" && (
+                  <Recommendations data={recommendations} />
+                )}
+              </>
+            )}
           </div>
-        </div>
-
-        <div className="mt-8">
-          {tabLoading ? (
-            <TabSkeleton activeTab={activeTab} />
-          ) : (
-            <>
-              {activeTab === "episodes" && (
-                <EpisodeGrid
-                  id={id}
-                  anime={anime}
-                  episodes={episodes}
-                  tmdbInfo={tmdbInfo}
-                />
-              )}
-
-              {activeTab === "relations" && <Seasons data={seasons} />}
-
-              {activeTab === "recommendations" && (
-                <Recommendations data={recommendations} />
-              )}
-            </>
-          )}
         </div>
       </div>
     </div>
@@ -356,37 +360,48 @@ export default function AnimeInfo() {
 function MainSkeleton() {
   return (
     <div className="min-h-screen bg-[#050505] text-white pt-24 pb-16">
-      <div className="max-w-[1700px] mx-auto px-4 lg:px-8">
-        <div className="relative overflow-hidden rounded-2xl bg-[#111] border border-white/10 min-h-[430px]">
-          <div className="absolute inset-0 bg-gradient-to-r from-[#151515] via-[#222] to-[#151515] opacity-70 animate-pulse" />
+      <div className="w-full px-4 sm:px-6 lg:px-10">
+        <div className="max-w-[1620px] mx-auto">
+          <div className="relative overflow-hidden rounded-3xl bg-[#111] border border-white/10 min-h-[430px]">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#151515] via-[#222] to-[#151515] opacity-70 animate-pulse" />
 
-          <div className="relative z-10 flex flex-col md:flex-row gap-8 p-8 md:p-12">
-            <div className="w-[230px] h-[330px] rounded-2xl bg-white/10 animate-pulse" />
+            <div className="relative z-10 flex flex-col md:flex-row gap-8 p-8 md:p-12">
+              <div className="w-[180px] h-[260px] rounded-2xl bg-white/10 animate-pulse" />
 
-            <div className="flex-1 max-w-[800px] space-y-5">
-              <div className="h-14 w-[70%] rounded-xl bg-white/10 animate-pulse" />
+              <div className="flex-1 max-w-[900px] space-y-5">
+                <div className="h-12 w-[58%] rounded-xl bg-white/10 animate-pulse" />
 
-              <div className="flex gap-3">
-                <div className="h-8 w-20 rounded-lg bg-white/10 animate-pulse" />
-                <div className="h-8 w-24 rounded-lg bg-white/10 animate-pulse" />
-                <div className="h-8 w-20 rounded-lg bg-white/10 animate-pulse" />
-              </div>
+                <div className="flex gap-3">
+                  <div className="h-8 w-20 rounded-lg bg-white/10 animate-pulse" />
+                  <div className="h-8 w-24 rounded-lg bg-white/10 animate-pulse" />
+                  <div className="h-8 w-20 rounded-lg bg-white/10 animate-pulse" />
+                </div>
 
-              <div className="space-y-3">
-                <div className="h-4 w-full rounded bg-white/10 animate-pulse" />
-                <div className="h-4 w-[90%] rounded bg-white/10 animate-pulse" />
-                <div className="h-4 w-[75%] rounded bg-white/10 animate-pulse" />
-              </div>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 max-w-[900px]">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="h-20 rounded-2xl bg-white/10 animate-pulse"
+                    />
+                  ))}
+                </div>
 
-              <div className="flex gap-3 pt-3">
-                <div className="h-14 w-40 rounded-xl bg-white/10 animate-pulse" />
-                <div className="h-14 w-32 rounded-xl bg-white/10 animate-pulse" />
+                <div className="space-y-3">
+                  <div className="h-4 w-full rounded bg-white/10 animate-pulse" />
+                  <div className="h-4 w-[90%] rounded bg-white/10 animate-pulse" />
+                  <div className="h-4 w-[75%] rounded bg-white/10 animate-pulse" />
+                </div>
+
+                <div className="flex gap-3 pt-3">
+                  <div className="h-12 w-36 rounded-full bg-white/10 animate-pulse" />
+                  <div className="h-12 w-28 rounded-full bg-white/10 animate-pulse" />
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <TabSkeleton activeTab="episodes" />
+          <TabSkeleton activeTab="episodes" />
+        </div>
       </div>
     </div>
   );
@@ -398,8 +413,8 @@ function TabSkeleton({ activeTab }) {
       <div>
         <div className="h-8 w-36 rounded bg-white/10 animate-pulse mb-5" />
 
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {Array.from({ length: 12 }).map((_, i) => (
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+          {Array.from({ length: 16 }).map((_, i) => (
             <div
               key={i}
               className="h-14 rounded-xl bg-[#141414] border border-white/10 animate-pulse"
