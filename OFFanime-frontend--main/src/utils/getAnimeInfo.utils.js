@@ -9,6 +9,25 @@ function cleanText(text = "") {
     .trim();
 }
 
+function normalizeStatus(status = "") {
+  const text = String(status).replaceAll("_", " ").trim();
+  const lower = text.toLowerCase();
+
+  if (lower.includes("finished") || lower.includes("completed")) {
+    return "Completed";
+  }
+
+  if (lower.includes("not yet")) {
+    return "Upcoming";
+  }
+
+  if (lower.includes("releasing") || lower.includes("currently airing")) {
+    return "Airing";
+  }
+
+  return text || "";
+}
+
 function normalizeForTheme(item = {}) {
   const title = item.title || item.name || "Unknown";
   const poster = item.poster || item.image || "";
@@ -26,6 +45,9 @@ function normalizeForTheme(item = {}) {
     item.ids?.mal ||
     item.ids?.malId ||
     null;
+
+  const status = normalizeStatus(item.status || "");
+  const isCompleted = status === "Completed";
 
   return {
     id: item.id,
@@ -47,7 +69,7 @@ function normalizeForTheme(item = {}) {
 
     description: cleanText(item.description),
     genres: item.genres || [],
-    status: item.status || "",
+    status,
     type: item.type || "TV",
     duration: item.duration || "",
     season: item.season || "",
@@ -55,11 +77,16 @@ function normalizeForTheme(item = {}) {
     studios: item.studios || [],
     score: item.score || "",
     episodes: item.episodes || item.totalEpisodes || null,
+    totalEpisodes: item.totalEpisodes || item.episodes || null,
+
+    nextAiringEpisode: isCompleted ? null : item.nextAiringEpisode || null,
+    nextEpisode: isCompleted ? null : item.nextEpisode || null,
+    broadcast: isCompleted ? null : item.broadcast || null,
 
     animeInfo: {
       Overview: cleanText(item.description),
       Genres: item.genres || [],
-      Status: item.status || "",
+      Status: status,
       Type: item.type || "TV",
       Duration: item.duration ? `${item.duration} min` : "",
       Premiered: item.season && item.year ? `${item.season} ${item.year}` : "",
@@ -73,8 +100,8 @@ function normalizeForTheme(item = {}) {
       tvInfo: {
         rating: item.score ? String(item.score) : "",
         quality: "HD",
-        sub: item.episodes || "?",
-        dub: item.episodes || "?",
+        sub: item.episodes || item.totalEpisodes || "?",
+        dub: item.dubEpisodes || item.dub || "N/A",
       },
     },
 
@@ -91,8 +118,15 @@ export default async function fetchAnimeInfo(id, random = false) {
     let animeId = id;
 
     if (random) {
-      const homeRes = await axios.get(`${api_url}/home`);
-      const list = homeRes.data?.results?.trending || [];
+      const homeRes = await axios.get(`${api_url}/home`, {
+        timeout: 8000,
+      });
+
+      const list =
+        homeRes.data?.results?.trending ||
+        homeRes.data?.trending ||
+        [];
+
       animeId = list[Math.floor(Math.random() * list.length)]?.id;
     }
 
@@ -101,7 +135,7 @@ export default async function fetchAnimeInfo(id, random = false) {
     }
 
     const response = await axios.get(`${api_url}/details/${animeId}`, {
-      timeout: 30000,
+      timeout: 10000,
     });
 
     const raw =
@@ -118,7 +152,7 @@ export default async function fetchAnimeInfo(id, random = false) {
       seasons: [],
     };
   } catch (error) {
-    console.error("Error fetching anime info:", error);
+    console.error("Error fetching anime info:", error?.message || error);
     return null;
   }
 }
