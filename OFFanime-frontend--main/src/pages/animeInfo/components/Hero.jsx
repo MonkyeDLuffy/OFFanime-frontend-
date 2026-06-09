@@ -63,19 +63,22 @@ function Hero({ anime, jikanInfo, tmdbInfo, tmdbLoading }) {
   const trailerUrl = getTrailerUrl(jikanInfo?.trailer || anime?.trailer);
 
   const type = jikanInfo?.type || anime?.type || anime?.format || "TV";
-  const status = cleanStatus(jikanInfo?.status || anime?.status || "Unknown");
+  const rawStatus = jikanInfo?.status || anime?.status || "Unknown";
+  const status = cleanStatus(rawStatus);
+  const isAiring = isCurrentlyAiring(rawStatus);
+
   const year = jikanInfo?.year || anime?.year || anime?.seasonYear || "N/A";
   const duration = cleanDuration(jikanInfo?.duration || anime?.duration);
   const rating = jikanInfo?.rating || anime?.rating || null;
 
-  const totalEpisodes =
+  const totalEpisodes = cleanEpisodeCount(
     jikanInfo?.episodes ||
-    anime?.episodes ||
-    anime?.totalEpisodes ||
-    tmdbInfo?.totalReturned ||
-    "N/A";
+      anime?.episodes ||
+      anime?.totalEpisodes ||
+      tmdbInfo?.totalReturned
+  );
 
-  const nextEpisode = getNextEpisode(anime, jikanInfo);
+  const nextEpisode = isAiring ? getNextEpisode(anime, jikanInfo) : null;
 
   const metaItems = [
     { icon: faTv, value: type },
@@ -89,7 +92,9 @@ function Hero({ anime, jikanInfo, tmdbInfo, tmdbLoading }) {
     { label: "Episodes", value: totalEpisodes, icon: faTv },
     { label: "Status", value: status, icon: faSignal },
     { label: "Duration", value: duration, icon: faClock },
-    { label: "Next EP", value: nextEpisode, icon: faForwardStep, wide: true },
+    ...(nextEpisode
+      ? [{ label: "Next EP", value: nextEpisode, icon: faForwardStep, wide: true }]
+      : []),
   ];
 
   return (
@@ -293,22 +298,51 @@ function getTrailerUrl(trailer) {
   return null;
 }
 
+function isCurrentlyAiring(value = "") {
+  const lower = String(value).replaceAll("_", " ").toLowerCase();
+
+  if (
+    lower.includes("finished") ||
+    lower.includes("completed") ||
+    lower.includes("ended")
+  ) {
+    return false;
+  }
+
+  return (
+    lower.includes("releasing") ||
+    lower.includes("currently airing") ||
+    lower === "airing" ||
+    lower.includes("airing")
+  );
+}
+
 function cleanStatus(value = "") {
   const text = String(value).replaceAll("_", " ").trim();
   if (!text) return "Unknown";
 
   const lower = text.toLowerCase();
+
+  // Check finished/completed FIRST.
+  // Jikan returns "Finished Airing", which was wrongly becoming "Airing" before.
+  if (
+    lower.includes("finished") ||
+    lower.includes("completed") ||
+    lower.includes("ended")
+  ) {
+    return "Completed";
+  }
+
   if (
     lower.includes("currently airing") ||
     lower.includes("releasing") ||
+    lower === "airing" ||
     lower.includes("airing")
   ) {
     return "Airing";
   }
-  if (lower.includes("finished") || lower.includes("completed")) {
-    return "Completed";
-  }
-  if (lower.includes("not yet")) return "Upcoming";
+
+  if (lower.includes("not yet") || lower.includes("upcoming")) return "Upcoming";
 
   return text
     .split(" ")
@@ -325,6 +359,11 @@ function cleanDuration(value) {
   return text;
 }
 
+function cleanEpisodeCount(value) {
+  if (!value || value === "?" || value === "Unknown") return "N/A";
+  return value;
+}
+
 function getNextEpisode(anime, jikanInfo) {
   const structuredNext =
     anime?.nextAiringEpisode ||
@@ -334,7 +373,7 @@ function getNextEpisode(anime, jikanInfo) {
   if (structuredNext?.airingAt) {
     const date = new Date(Number(structuredNext.airingAt) * 1000);
 
-    if (!Number.isNaN(date.getTime())) {
+    if (!Number.isNaN(date.getTime()) && date.getTime() > Date.now()) {
       const day = date.toLocaleDateString("en-IN", { weekday: "short" });
       const time = date.toLocaleTimeString("en-IN", {
         hour: "2-digit",
@@ -356,12 +395,12 @@ function getNextEpisode(anime, jikanInfo) {
 
   if (broadcastText) return formatBroadcastText(broadcastText);
 
-  return "Schedule";
+  return null;
 }
 
 function formatBroadcastText(value = "") {
   const text = String(value).replace(/\s+/g, " ").trim();
-  if (!text) return "Schedule";
+  if (!text) return null;
 
   const noTimezone = text.replace(/\s*\(.*?\)\s*$/, "").trim();
   const match = noTimezone.match(/^([A-Za-z]+)s?\s+at\s+(.+)$/i);
