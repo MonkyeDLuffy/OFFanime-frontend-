@@ -122,7 +122,7 @@ function Hero({ anime, jikanInfo, tmdbInfo, tmdbLoading }) {
         <div className="relative z-10 w-full px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-14 pt-[120px]">
           <div className="grid grid-cols-1 lg:grid-cols-[215px_minmax(0,1fr)] xl:grid-cols-[235px_minmax(0,1fr)] gap-7 xl:gap-10 items-start">
             <div className="relative mx-auto lg:mx-0">
-              <div className="relative w-[185px] sm:w-[200px] xl:w-[215px] h-[430px] sm:h-[470px] xl:h-[510px] rounded-[22px] overflow-hidden border border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.85)] bg-black/40">
+              <div className="relative w-[185px] sm:w-[200px] xl:w-[215px] h-[100px] sm:h-[470px] xl:h-[510px] rounded-[22px] overflow-hidden border border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.85)] bg-black/40">
                 {poster && (
                   <img
                     src={poster}
