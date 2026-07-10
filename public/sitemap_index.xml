@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://offanime.cc/sitemap-main.xml</loc>
+    <lastmod>2026-07-05</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://offanime.cc/sitemap-anime.xml</loc>
+    <lastmod>2026-07-05</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://offanime.cc/sitemap-films.xml</loc>
+    <lastmod>2026-07-05</lastmod>
+  </sitemap>
+</sitemapindex>

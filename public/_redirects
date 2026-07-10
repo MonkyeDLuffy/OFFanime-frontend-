@@ -1,0 +1,11 @@
+# Cloudflare Pages SPA fallback (same proven rule the anime-only production
+# site already uses on Cloudflare). On Cloudflare Pages, real files in the
+# build output — including /sitemap.xml, /sitemap-*.xml and /robots.txt —
+# are ALWAYS served before this rule, so they still return correct XML/text.
+# We deliberately keep this file to a single rule: extra/placeholder rules can
+# make Cloudflare misbehave (the cause of the previous blank screen).
+# Old (dead) sitemap URL -> new sitemap index. Specific rules always win over
+# the splat below on Cloudflare Pages, so this cannot affect the SPA fallback.
+/sitemap.xml    /sitemap_index.xml    301
+
+/*    /index.html    200
